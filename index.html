@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saddam Supreme | Eid Special</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <style>
+        body { background: #020617; color: white; user-select: none; font-family: sans-serif; }
+        .video-container { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; border-radius: 20px; }
+        iframe { pointer-events: none; width: 100%; height: 100%; border: none; }
+        .overlay-blocker { position: absolute; inset: 0; z-index: 10; cursor: pointer; }
+        .ad-box { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: 0.5s; }
+        .ad-box.active { visibility: visible; opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <nav class="p-6 border-b border-white/5 flex justify-between items-center sticky top-0 bg-[#020617]/80 backdrop-blur-xl z-50">
+        <h1 class="text-2xl font-black italic text-blue-500 uppercase">Saddam Supreme</h1>
+    </nav>
+
+    <main class="p-4 max-w-6xl mx-auto space-y-10">
+        <div id="player-section" class="hidden space-y-4">
+            <div class="video-container shadow-2xl border border-white/5">
+                <div class="overlay-blocker" onclick="handleVideoClick()"></div>
+                <iframe id="main-player" src="" allow="autoplay"></iframe>
+            </div>
+            <div class="flex justify-between items-center">
+                <h2 id="playing-title" class="text-sm font-bold text-gray-400 truncate w-2/3 uppercase">Movie Title</h2>
+                <button onclick="downloadVideo()" class="bg-green-600 px-6 py-2 rounded-full text-[10px] font-black uppercase">Download Now</button>
+            </div>
+        </div>
+
+        <h3 class="text-xs font-black uppercase tracking-widest text-blue-500">Eid Specials 2026</h3>
+        <div id="video-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            </div>
+    </main>
+
+    <div id="ad-layer" class="ad-box p-6">
+        <div class="bg-[#0d1425] p-10 rounded-[40px] border border-blue-500/20 text-center max-w-xs w-full shadow-2xl">
+            <div class="w-16 h-16 bg-blue-500/10 rounded-full mx-auto flex items-center justify-center mb-6">
+                <span class="text-2xl animate-pulse">📢</span>
+            </div>
+            <h3 class="text-xl font-black text-white mb-2 italic">অ্যাড লোড হচ্ছে...</h3>
+            <p class="text-[10px] text-gray-500 font-bold uppercase mb-8">অপেক্ষা করুন: <span id="timer" class="text-blue-500">10</span> সেকেন্ড</p>
+            <button id="skip-btn" disabled class="w-full py-4 bg-gray-800 text-gray-600 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all">Please Wait</button>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = { 
+            apiKey: "AIzaSyB7w62sre73EzNY7TsvHfg88sjVrzPTcSM", 
+            databaseURL: "https://saddam-premium-hub-default-rtdb.firebaseio.com",
+            projectId: "saddam-premium-hub" 
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let adSettings = { status: 'off', link: '', timer: 10, interval: 3 }; 
+        let currentVid = "";
+
+        // Admin Settings Sync
+        db.ref('settings').on('value', s => { 
+            if(s.val()) adSettings = s.val(); 
+            loadChannelVideos(adSettings.channelId);
+        });
+
+        async function loadChannelVideos(channelId) {
+            if(!channelId) return;
+            const API_KEY = "YOUR_YOUTUBE_API_KEY"; // এখানে আপনার ইউটিউব API কি দিতে হবে
+            const url = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=20`;
+            
+            // Note: আপাতত স্ট্যাটিক ভাবে দেখাচ্ছি, আপনি API কি বসিয়ে দিলে সব অটো আসবে।
+            const grid = document.getElementById('video-grid');
+            grid.innerHTML = '<p class="text-xs text-gray-600 uppercase">Loading Movies...</p>';
+            
+            // ফেচ মেকানিজম এখানে বসবে
+        }
+
+        function playVideo(id, title) {
+            currentVid = id;
+            document.getElementById('player-section').classList.remove('hidden');
+            document.getElementById('main-player').src = `https://www.youtube.com/embed/${id}?autoplay=1&controls=0&modestbranding=1&rel=0`;
+            document.getElementById('playing-title').innerText = title;
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            
+            if(adSettings.status === 'on') showAd();
+        }
+
+        function showAd() {
+            const layer = document.getElementById('ad-layer');
+            const skipBtn = document.getElementById('skip-btn');
+            const timerText = document.getElementById('timer');
+            let timeLeft = adSettings.timer;
+
+            layer.classList.add('active');
+            window.open(adSettings.link, '_blank'); // ওপেন অ্যাড লিঙ্ক
+
+            const countdown = setInterval(() => {
+                timeLeft--;
+                timerText.innerText = timeLeft;
+                if(timeLeft <= 0) {
+                    clearInterval(countdown);
+                    skipBtn.disabled = false;
+                    skipBtn.innerText = "SKIP AD & WATCH";
+                    skipBtn.classList.replace('bg-gray-800', 'bg-blue-600');
+                    skipBtn.classList.replace('text-gray-600', 'text-white');
+                    skipBtn.onclick = () => layer.classList.remove('active');
+                }
+            }, 1000);
+        }
+
+        function handleVideoClick() {
+            if(adSettings.status === 'on') showAd();
+        }
+
+        function downloadVideo() {
+            if(!currentVid) return;
+            window.open(`https://www.youtubepp.com/watch?v=${currentVid}`, '_blank');
+        }
+    </script>
+</body>
+</html>
+  
