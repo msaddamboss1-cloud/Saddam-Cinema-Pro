@@ -1,127 +1,164 @@
-<!DOCTYPE html>
+     <!DOCTYPE html>
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saddam Supreme | Eid Special</title>
+    <title>Saddam Supreme | OTT Experience</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <style>
-        body { background: #020617; color: white; user-select: none; font-family: sans-serif; }
-        .video-container { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; border-radius: 20px; }
-        iframe { pointer-events: none; width: 100%; height: 100%; border: none; }
-        .overlay-blocker { position: absolute; inset: 0; z-index: 10; cursor: pointer; }
-        .ad-box { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; display: flex; align-items: center; justify-content: center; visibility: hidden; opacity: 0; transition: 0.5s; }
-        .ad-box.active { visibility: visible; opacity: 1; }
+        body { background: #020617; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .blur-active { filter: blur(30px); pointer-events: none; transition: 0.8s ease-in-out; }
+        
+        /* প্রিমিয়াম অ্যাড বক্স */
+        .ad-container { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 85%; height: 75%; background: #0d1425; z-index: 10000;
+            border-radius: 40px; border: 1px solid rgba(59, 130, 246, 0.5);
+            display: none; flex-direction: column; overflow: hidden;
+            box-shadow: 0 0 150px rgba(0,0,0,1);
+        }
+
+        /* কার্ড এনিমেশন */
+        .movie-card { position: relative; border-radius: 20px; overflow: hidden; cursor: pointer; transition: 0.5s; background: #0f172a; border: 1px solid rgba(255,255,255,0.03); }
+        .movie-card:hover { transform: scale(1.05); border-color: #3b82f6; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .movie-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+        
+        /* কাস্টম স্ক্রলবার */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <nav class="p-6 border-b border-white/5 flex justify-between items-center sticky top-0 bg-[#020617]/80 backdrop-blur-xl z-50">
-        <h1 class="text-2xl font-black italic text-blue-500 uppercase">Saddam Supreme</h1>
+<div id="content-body">
+    <nav class="p-6 bg-[#020617]/95 backdrop-blur-3xl sticky top-0 z-[100] border-b border-white/5 flex justify-between items-center">
+        <h1 class="text-3xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-400 uppercase italic tracking-tighter">SADDAM SUPREME</h1>
+        <div class="flex items-center space-x-2">
+            <span class="text-[10px] font-bold text-blue-500 animate-pulse uppercase">Live Server</span>
+            <div class="w-3 h-3 bg-blue-600 rounded-full"></div>
+        </div>
     </nav>
 
-    <main class="p-4 max-w-6xl mx-auto space-y-10">
-        <div id="player-section" class="hidden space-y-4">
-            <div class="video-container shadow-2xl border border-white/5">
-                <div class="overlay-blocker" onclick="handleVideoClick()"></div>
-                <iframe id="main-player" src="" allow="autoplay"></iframe>
+    <main class="max-w-7xl mx-auto p-6 space-y-12">
+        <div id="player-wrapper" class="hidden animate-fade-in">
+            <div class="rounded-[40px] overflow-hidden border-4 border-white/5 shadow-[0_0_80px_rgba(0,0,0,0.5)]">
+                <div class="aspect-video bg-black">
+                    <iframe id="video-frame" class="w-full h-full" src="" allow="autoplay"></iframe>
+                </div>
             </div>
-            <div class="flex justify-between items-center">
-                <h2 id="playing-title" class="text-sm font-bold text-gray-400 truncate w-2/3 uppercase">Movie Title</h2>
-                <button onclick="downloadVideo()" class="bg-green-600 px-6 py-2 rounded-full text-[10px] font-black uppercase">Download Now</button>
+            <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-6 bg-[#0d1425] p-8 rounded-[30px] border border-white/5">
+                <h2 id="video-name" class="text-2xl font-black uppercase text-white tracking-tight">Movie Loading...</h2>
+                <a id="download-url" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-500/20 transition-all active:scale-95">Download Now</a>
             </div>
         </div>
 
-        <h3 class="text-xs font-black uppercase tracking-widest text-blue-500">Eid Specials 2026</h3>
-        <div id="video-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <section class="space-y-8">
+            <div class="flex items-center space-x-4">
+                <div class="h-8 w-1.5 bg-blue-600 rounded-full"></div>
+                <h3 class="text-xs font-black uppercase tracking-[0.6em] text-blue-500">New Releases 2026</h3>
             </div>
+            <div id="movie-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
+                </div>
+        </section>
     </main>
+</div>
 
-    <div id="ad-layer" class="ad-box p-6">
-        <div class="bg-[#0d1425] p-10 rounded-[40px] border border-blue-500/20 text-center max-w-xs w-full shadow-2xl">
-            <div class="w-16 h-16 bg-blue-500/10 rounded-full mx-auto flex items-center justify-center mb-6">
-                <span class="text-2xl animate-pulse">📢</span>
+<div id="ad-box" class="ad-container">
+    <div class="flex flex-col h-full relative">
+        <iframe id="ad-frame" class="flex-grow bg-black"></iframe>
+        <div class="absolute inset-0 z-10"></div> <div class="p-6 bg-[#0d1425] border-t border-white/5 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="w-2 h-2 bg-blue-500 rounded-full animate-ping"></span>
+                <span id="timer-txt" class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Wait: 10s</span>
             </div>
-            <h3 class="text-xl font-black text-white mb-2 italic">অ্যাড লোড হচ্ছে...</h3>
-            <p class="text-[10px] text-gray-500 font-bold uppercase mb-8">অপেক্ষা করুন: <span id="timer" class="text-blue-500">10</span> সেকেন্ড</p>
-            <button id="skip-btn" disabled class="w-full py-4 bg-gray-800 text-gray-600 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all">Please Wait</button>
+            <button id="skip-btn" disabled class="px-12 py-4 bg-gray-800 text-gray-600 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all">Skip Ad</button>
         </div>
     </div>
+</div>
 
-    <script>
-        const firebaseConfig = { 
-            apiKey: "AIzaSyB7w62sre73EzNY7TsvHfg88sjVrzPTcSM", 
-            databaseURL: "https://saddam-premium-hub-default-rtdb.firebaseio.com",
-            projectId: "saddam-premium-hub" 
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+<script>
+    // আপনার ফায়ারবেস কনফিগ
+    const firebaseConfig = { 
+        apiKey: "AIzaSyB7w62sre73EzNY7TsvHfg88sjVrzPTcSM", 
+        databaseURL: "https://saddam-premium-hub-default-rtdb.firebaseio.com",
+        projectId: "saddam-premium-hub" 
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        let adSettings = { status: 'off', link: '', timer: 10, interval: 3 }; 
-        let currentVid = "";
+    // আপনার পারমানেন্ট অ্যাডস্টারার লিঙ্ক
+    const PERMANENT_AD_LINK = "https://www.profitablecpmrate.com/un4f76p6p?key=f0b83b8b6f79986b5952e46049a463a6";
 
-        // Admin Settings Sync
-        db.ref('settings').on('value', s => { 
-            if(s.val()) adSettings = s.val(); 
-            loadChannelVideos(adSettings.channelId);
-        });
+    let settings = {};
 
-        async function loadChannelVideos(channelId) {
-            if(!channelId) return;
-            const API_KEY = "YOUR_YOUTUBE_API_KEY"; // এখানে আপনার ইউটিউব API কি দিতে হবে
-            const url = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=20`;
-            
-            // Note: আপাতত স্ট্যাটিক ভাবে দেখাচ্ছি, আপনি API কি বসিয়ে দিলে সব অটো আসবে।
-            const grid = document.getElementById('video-grid');
-            grid.innerHTML = '<p class="text-xs text-gray-600 uppercase">Loading Movies...</p>';
-            
-            // ফেচ মেকানিজম এখানে বসবে
-        }
+    db.ref('settings').on('value', snap => {
+        settings = snap.val();
+        if(settings.channelId) loadChannel(settings.channelId);
+        // সাইটে ঢোকার সাথে সাথে অ্যাড
+        if(settings.status === 'on') setTimeout(() => showAd(), 2000);
+    });
 
-        function playVideo(id, title) {
-            currentVid = id;
-            document.getElementById('player-section').classList.remove('hidden');
-            document.getElementById('main-player').src = `https://www.youtube.com/embed/${id}?autoplay=1&controls=0&modestbranding=1&rel=0`;
-            document.getElementById('playing-title').innerText = title;
-            window.scrollTo({top: 0, behavior: 'smooth'});
-            
-            if(adSettings.status === 'on') showAd();
-        }
+    async function loadChannel(input) {
+        let cid = input.includes('youtube.com') ? input.split('/').pop().replace('@', '') : input;
+        const url = `https://www.googleapis.com/youtube/v3/search?key=${firebaseConfig.apiKey}&channelId=${cid}&part=snippet,id&order=date&maxResults=30&type=video`;
+        
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            const grid = document.getElementById('movie-grid');
+            grid.innerHTML = "";
 
-        function showAd() {
-            const layer = document.getElementById('ad-layer');
-            const skipBtn = document.getElementById('skip-btn');
-            const timerText = document.getElementById('timer');
-            let timeLeft = adSettings.timer;
+            data.items.forEach(v => {
+                grid.innerHTML += `
+                    <div onclick="showAd('${v.id.videoId}', '${v.snippet.title.replace(/'/g, "")}')" class="movie-card">
+                        <img src="${v.snippet.thumbnails.high.url}">
+                        <div class="p-4 bg-gradient-to-t from-black to-transparent">
+                            <h4 class="text-[10px] font-black text-gray-300 truncate uppercase">${v.snippet.title}</h4>
+                        </div>
+                    </div>`;
+            });
+        } catch(e) { console.error("Error"); }
+    }
 
-            layer.classList.add('active');
-            window.open(adSettings.link, '_blank'); // ওপেন অ্যাড লিঙ্ক
+    function showAd(vidId, title) {
+        if(settings.status === 'off' && vidId) { play(vidId, title); return; }
 
-            const countdown = setInterval(() => {
-                timeLeft--;
-                timerText.innerText = timeLeft;
-                if(timeLeft <= 0) {
-                    clearInterval(countdown);
-                    skipBtn.disabled = false;
-                    skipBtn.innerText = "SKIP AD & WATCH";
-                    skipBtn.classList.replace('bg-gray-800', 'bg-blue-600');
-                    skipBtn.classList.replace('text-gray-600', 'text-white');
-                    skipBtn.onclick = () => layer.classList.remove('active');
-                }
-            }, 1000);
-        }
+        const modal = document.getElementById('ad-box');
+        const skip = document.getElementById('skip-btn');
+        const timer = document.getElementById('timer-txt');
+        document.getElementById('ad-frame').src = PERMANENT_AD_LINK;
+        
+        modal.style.display = 'flex';
+        document.getElementById('content-body').classList.add('blur-active');
 
-        function handleVideoClick() {
-            if(adSettings.status === 'on') showAd();
-        }
+        let left = settings.timer || 10;
+        const clock = setInterval(() => {
+            left--;
+            timer.innerText = `Wait: ${left}s`;
+            if(left <= 0) {
+                clearInterval(clock);
+                skip.disabled = false;
+                skip.innerText = "Close & Play Movie";
+                skip.classList.replace('bg-gray-800', 'bg-blue-600');
+                skip.classList.replace('text-gray-600', 'text-white');
+                skip.onclick = () => {
+                    modal.style.display = 'none';
+                    document.getElementById('content-body').classList.remove('blur-active');
+                    if(vidId) play(vidId, title);
+                };
+            }
+        }, 1000);
+    }
 
-        function downloadVideo() {
-            if(!currentVid) return;
-            window.open(`https://www.youtubepp.com/watch?v=${currentVid}`, '_blank');
-        }
-    </script>
+    function play(id, title) {
+        document.getElementById('player-wrapper').classList.remove('hidden');
+        document.getElementById('video-frame').src = `https://www.youtube.com/embed/${id}?autoplay=1`;
+        document.getElementById('video-name').innerText = title;
+        document.getElementById('download-url').href = `https://www.youtubepp.com/watch?v=${id}`;
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+</script>
 </body>
 </html>
-  
