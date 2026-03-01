@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title>Saddam Boss Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+</head>
+<body class="bg-[#0b0e14] text-white p-6 font-sans">
+    <div class="max-w-4xl mx-auto space-y-10">
+        <h1 class="text-3xl font-black italic text-blue-500 uppercase border-b border-white/5 pb-4">Master Ad & Channel Control</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <section class="bg-[#0d1425] p-8 rounded-[40px] border border-white/5 space-y-6">
+                <h2 class="text-sm font-black uppercase text-green-500 tracking-widest">Ad Engine Settings</h2>
+                
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-gray-500 ml-1">Ad Status</label>
+                    <select id="ad-status" class="w-full bg-black p-4 rounded-2xl border border-gray-800 mt-2 outline-none font-bold">
+                        <option value="on">অ্যাড চালু (ON)</option>
+                        <option value="off">অ্যাড বন্ধ (OFF)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-gray-500 ml-1">Adsterra/Direct Link</label>
+                    <input id="ad-link" type="text" placeholder="https://..." class="w-full bg-black p-4 rounded-2xl border border-gray-800 mt-2 outline-none text-xs">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-gray-500 ml-1">Skip Timer (Sec)</label>
+                        <input id="ad-timer" type="number" placeholder="10" class="w-full bg-black p-4 rounded-2xl border border-gray-800 mt-2 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-gray-500 ml-1">Ad Interval (Min)</label>
+                        <input id="ad-interval" type="number" placeholder="5" class="w-full bg-black p-4 rounded-2xl border border-gray-800 mt-2 outline-none">
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-[#0d1425] p-8 rounded-[40px] border border-white/5 space-y-6">
+                <h2 class="text-sm font-black uppercase text-blue-500 tracking-widest">YouTube Channel Sync</h2>
+                
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-gray-500 ml-1">YouTube Channel ID</label>
+                    <input id="channel-id" type="text" placeholder="UC..." class="w-full bg-black p-4 rounded-2xl border border-gray-800 mt-2 outline-none text-xs">
+                </div>
+
+                <button onclick="saveSettings()" class="w-full bg-blue-600 hover:bg-blue-500 py-6 rounded-[25px] font-black uppercase text-xs tracking-widest shadow-xl transition-all active:scale-95">Update System Now</button>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = { 
+            apiKey: "AIzaSyB7w62sre73EzNY7TsvHfg88sjVrzPTcSM", 
+            databaseURL: "https://saddam-premium-hub-default-rtdb.firebaseio.com",
+            projectId: "saddam-premium-hub" 
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Load Current Settings
+        db.ref('settings').on('value', s => {
+            const d = s.val();
+            if(d) {
+                document.getElementById('ad-status').value = d.status;
+                document.getElementById('ad-link').value = d.link;
+                document.getElementById('ad-timer').value = d.timer;
+                document.getElementById('ad-interval').value = d.interval;
+                document.getElementById('channel-id').value = d.channelId;
+            }
+        });
+
+        function saveSettings() {
+            const data = {
+                status: document.getElementById('ad-status').value,
+                link: document.getElementById('ad-link').value,
+                timer: document.getElementById('ad-timer').value,
+                interval: document.getElementById('ad-interval').value,
+                channelId: document.getElementById('channel-id').value
+            };
+            db.ref('settings').set(data).then(() => alert("সাফল্যের সাথে আপডেট হয়েছে!"));
+        }
+    </script>
+</body>
+</html>
+  
