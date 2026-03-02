@@ -1,0 +1,107 @@
+        <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><title>Owner Master - Saddam OTT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+</head>
+<body class="bg-black text-white p-5">
+    <div id="lock" class="max-w-xs mx-auto mt-20 text-center space-y-4">
+        <h2 class="font-black text-blue-500 uppercase tracking-widest">OWNER LOGIN</h2>
+        <input id="pin" type="password" class="w-full p-4 bg-gray-900 rounded-2xl text-center border border-blue-600 outline-none" placeholder="পাসওয়ার্ড দিন">
+        <button onclick="enter()" class="bg-blue-600 w-full p-4 rounded-2xl font-black">প্রবেশ করুন</button>
+    </div>
+
+    <div id="panel" class="hidden max-w-lg mx-auto space-y-6 pb-20">
+        <div class="bg-blue-600 p-6 rounded-[35px] flex justify-between items-center shadow-xl">
+            <h2 class="font-black italic">SADDAM CONTROL V14</h2>
+            <button onclick="save()" class="bg-black px-6 py-2 rounded-xl text-[10px] font-bold">SAVE (সেভ)</button>
+        </div>
+
+        <div class="bg-gray-900 p-6 rounded-[35px] border border-white/10 space-y-5">
+            <div>
+                <label class="text-[10px] font-bold text-yellow-500 ml-2 uppercase">Worker PIN (কর্মীদের জন্য পিন)</label>
+                <input id="workerCode" class="w-full bg-black p-4 rounded-xl text-sm border border-gray-800 mt-1" placeholder="যেমন: 5566">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] font-bold text-blue-500 ml-2 uppercase">Ad Timer (সেকেন্ড)</label>
+                    <input id="timer" type="number" class="w-full bg-black p-4 rounded-xl text-sm border border-gray-800 mt-1">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-red-500 ml-2 uppercase">Ad Status</label>
+                    <select id="adStatus" class="w-full bg-black p-4 rounded-xl text-xs border border-gray-800 mt-1">
+                        <option value="on">ON (চালু)</option><option value="off">OFF (বন্ধ)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-bold text-purple-500 ml-2 uppercase">Main Ad Gate (৮০% ডিসপ্লে অ্যাড)</label>
+                <textarea id="ban1" class="w-full h-24 bg-black p-4 rounded-xl text-[10px] mt-1 font-mono"></textarea>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-bold text-green-500 ml-2 uppercase">24h Income Strip (নিচের ছোট অ্যাড)</label>
+                <textarea id="ban2" class="w-full h-24 bg-black p-4 rounded-xl text-[10px] mt-1 font-mono"></textarea>
+            </div>
+        </div>
+
+        <div class="bg-gray-900 p-6 rounded-[35px] border border-white/10">
+            <h3 class="text-xs font-bold text-blue-400 mb-4 uppercase">Manage Workers (কর্মী তালিকা)</h3>
+            <div id="w-list" class="space-y-3"></div>
+        </div>
+    </div>
+
+<script>
+    firebase.initializeApp({ databaseURL: "https://saddam-premium-hub-default-rtdb.firebaseio.com" });
+    const db = firebase.database();
+
+    function enter() {
+        if(document.getElementById('pin').value === '7744') {
+            document.getElementById('lock').classList.add('hidden');
+            document.getElementById('panel').classList.remove('hidden');
+            load();
+        } else { alert("ভুল মাস্টার পাসওয়ার্ড!"); }
+    }
+
+    function load() {
+        db.ref('settings').on('value', snap => {
+            const d = snap.val() || {};
+            document.getElementById('workerCode').value = d.workerCode || "5566";
+            document.getElementById('timer').value = d.timer || 10;
+            document.getElementById('adStatus').value = d.adStatus || "on";
+            document.getElementById('ban1').value = d.ban1 || "";
+            document.getElementById('ban2').value = d.ban2 || "";
+        });
+
+        db.ref('workers').on('value', snap => {
+            const list = document.getElementById('w-list'); list.innerHTML = "";
+            snap.forEach(c => {
+                const w = c.val(); const k = c.key;
+                const clr = w.status === 'active' ? 'bg-red-600' : 'bg-green-600';
+                list.innerHTML += `<div class="flex justify-between items-center bg-black p-4 rounded-2xl border border-white/5">
+                    <span class="text-[10px] font-mono">${w.email}</span>
+                    <button onclick="ban('${k}', '${w.status}')" class="${clr} px-4 py-1 rounded-lg text-[10px] font-bold uppercase">${w.status === 'active' ? 'Block' : 'Active'}</button>
+                </div>`;
+            });
+        });
+    }
+
+    function ban(k, s) { db.ref('workers/'+k).update({status: s === 'active' ? 'banned' : 'active'}); }
+
+    function save() {
+        db.ref('settings').update({
+            workerCode: document.getElementById('workerCode').value,
+            timer: parseInt(document.getElementById('timer').value),
+            adStatus: document.getElementById('adStatus').value,
+            ban1: document.getElementById('ban1').value,
+            ban2: document.getElementById('ban2').value,
+            siteName: "SADDAM OTT"
+        }).then(() => alert("Saved!"));
+    }
+</script>
+</body>
+</html>
