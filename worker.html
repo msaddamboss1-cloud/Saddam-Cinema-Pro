@@ -1,4 +1,4 @@
-          <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8"><title>Worker Portal</title>
@@ -7,22 +7,20 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
 <body class="bg-[#020617] text-white p-6">
-    <div id="worker-box" class="max-w-md mx-auto space-y-4">
-        <h2 class="text-blue-500 font-black uppercase">Post New Video</h2>
-        <input id="v-name" placeholder="Movie/Video Name" class="w-full p-4 bg-slate-900 rounded-2xl border border-white/5">
-        <input id="v-thumb" placeholder="Thumbnail/Poster URL" class="w-full p-4 bg-slate-900 rounded-2xl border border-white/5">
-        <input id="v-url" placeholder="Video Direct Link (.mp4)" class="w-full p-4 bg-slate-900 rounded-2xl border border-white/5">
-        <button onclick="publish()" class="w-full bg-blue-600 p-5 rounded-2xl font-black uppercase">Publish Now</button>
+    <div class="max-w-md mx-auto space-y-4">
+        <h2 class="text-blue-500 font-black uppercase text-center mb-6 tracking-widest">Post Movie</h2>
+        <input id="n" placeholder="Movie Name" class="w-full p-4 bg-white/5 rounded-2xl border border-white/5 outline-none focus:border-blue-500">
+        <input id="t" placeholder="Poster/Thumbnail URL" class="w-full p-4 bg-white/5 rounded-2xl border border-white/5 outline-none focus:border-blue-500">
+        <input id="l" placeholder="Direct Video Link (.mp4)" class="w-full p-4 bg-white/5 rounded-2xl border border-white/5 outline-none focus:border-blue-500">
+        <button onclick="post()" class="w-full bg-blue-600 p-5 rounded-2xl font-black uppercase shadow-lg shadow-blue-600/20">Publish Now</button>
     </div>
 <script>
     firebase.initializeApp({ databaseURL: "https://saddam-premium-hub-default-rtdb.firebaseio.com" });
     const db = firebase.database();
-    function publish() {
-        const name = document.getElementById('v-name').value;
-        const thumb = document.getElementById('v-thumb').value;
-        const dl = document.getElementById('v-url').value;
-        if(!name || !dl) return alert("Fill all fields!");
-        db.ref('movies').push({ name, thumb, download: dl }).then(() => { alert("Published!"); location.reload(); });
+    function post() {
+        const n = document.getElementById('n').value, t = document.getElementById('t').value, l = document.getElementById('l').value;
+        if(!n || !l) return alert("Fill Name and Link!");
+        db.ref('movies').push({ name: n, thumb: t, link: l }).then(() => { alert("Success!"); location.reload(); });
     }
 </script>
 </body>
