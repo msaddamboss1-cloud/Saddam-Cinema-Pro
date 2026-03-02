@@ -1,82 +1,73 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><title>Worker Portal - Saddam OTT</title>
+    <meta charset="UTF-8"><title>Worker Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
-<body class="bg-[#020617] text-white p-6">
+<body class="bg-[#020617] text-white p-5 font-sans">
 
-    <div id="login-section" class="max-w-xs mx-auto mt-20 space-y-4">
-        <h2 class="text-2xl font-black text-blue-500 text-center uppercase">Worker Entry</h2>
-        <input id="email" type="email" placeholder="Enter Gmail" class="w-full p-4 bg-slate-900 rounded-2xl border border-slate-800 outline-none">
-        <input id="pass" type="password" placeholder="Set Password" class="w-full p-4 bg-slate-900 rounded-2xl border border-slate-800 outline-none">
-        <button onclick="handleAuth()" class="w-full bg-blue-600 p-4 rounded-2xl font-black shadow-lg">CONTINUE</button>
+    <div id="box-1" class="max-w-xs mx-auto mt-20 space-y-4">
+        <h2 class="text-xl font-black text-blue-500 text-center uppercase italic">Worker Hub</h2>
+        <input id="w-mail" type="email" placeholder="Gmail" class="w-full p-4 bg-slate-900 rounded-2xl border border-slate-800 outline-none">
+        <input id="w-pass" type="password" placeholder="Password" class="w-full p-4 bg-slate-900 rounded-2xl border border-slate-800 outline-none">
+        <button onclick="login()" class="w-full bg-blue-600 p-4 rounded-2xl font-black">LOGIN / REGISTER</button>
     </div>
 
-    <div id="pin-section" class="hidden max-w-xs mx-auto mt-20 space-y-4 text-center">
-        <h2 class="font-bold text-yellow-500">Security Check</h2>
-        <p class="text-[10px] text-gray-400">এডমিনের দেয়া ৫ সংখ্যার পিনটি বসান</p>
-        <input id="v-pin" type="password" placeholder="Enter Secret PIN" class="w-full p-4 bg-slate-900 rounded-2xl border border-yellow-600 outline-none text-center font-bold tracking-[10px]">
-        <button onclick="verifyPin()" class="w-full bg-yellow-600 p-4 rounded-2xl font-black">VERIFY & ENTER</button>
+    <div id="box-2" class="hidden max-w-xs mx-auto mt-20 space-y-4 text-center">
+        <h2 class="font-bold text-yellow-500">Security PIN</h2>
+        <input id="w-pin" type="password" placeholder="Secret PIN" class="w-full p-4 bg-slate-900 rounded-2xl border border-yellow-600 text-center font-bold tracking-[8px]">
+        <button onclick="verify()" class="w-full bg-yellow-600 p-4 rounded-2xl font-black">ACCESS PANEL</button>
     </div>
 
-    <div id="dash-section" class="hidden max-w-md mx-auto space-y-4 pb-20">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-green-500 font-black italic">UPLOAD SYSTEM</h2>
-            <span id="user-display" class="text-[10px] bg-slate-800 px-3 py-1 rounded-full"></span>
-        </div>
-        <input id="mName" placeholder="Movie Name" class="w-full p-4 bg-slate-900 rounded-2xl border border-slate-800">
-        <input id="mThumb" placeholder="Thumbnail Link" class="w-full p-4 bg-slate-900 rounded-2xl border border-slate-800">
-        <input id="mDL" placeholder="Chrome Direct Download Link" class="w-full p-4 bg-slate-900 rounded-2xl border border-slate-800">
-        <button onclick="uploadMovie()" class="w-full bg-blue-600 p-5 rounded-[25px] font-black text-sm shadow-xl shadow-blue-600/20 active:scale-95 transition">UPLOAD & PUBLISH</button>
+    <div id="box-3" class="hidden max-w-md mx-auto space-y-4 pb-20">
+        <h2 class="text-green-500 font-black italic">POST NEW CONTENT</h2>
+        <input id="v-name" placeholder="Movie Name" class="w-full p-4 bg-slate-900 rounded-2xl border border-slate-800">
+        <input id="v-thumb" placeholder="Thumbnail Image Link" class="w-full p-4 bg-slate-900 rounded-2xl border border-slate-800">
+        <input id="v-dl" placeholder="Direct Download Link" class="w-full p-4 bg-slate-900 rounded-2xl border border-slate-800">
+        <button onclick="submitContent()" class="w-full bg-blue-600 p-5 rounded-[25px] font-black text-sm">PUBLISH NOW</button>
     </div>
 
 <script>
     firebase.initializeApp({ databaseURL: "https://saddam-premium-hub-default-rtdb.firebaseio.com" });
     const db = firebase.database();
-    let loggedUser = "";
+    let userKey = "";
 
-    function handleAuth() {
-        const mail = document.getElementById('email').value.replace(/\./g, ',');
-        const psw = document.getElementById('pass').value;
-        if(!mail.includes('@') || psw.length < 4) return alert("সঠিক ইমেইল ও পাসওয়ার্ড দিন!");
+    function login() {
+        const mail = document.getElementById('w-mail').value.replace(/\./g, ',');
+        const pass = document.getElementById('w-pass').value;
+        if(!mail.includes('@') || pass.length < 4) return alert("Enter Valid Details!");
 
         db.ref('workers/' + mail).once('value', s => {
             const d = s.val();
-            if(d && d.status === 'banned') return alert("ব্যান করা হয়েছে! মালিকের সাথে যোগাযোগ করুন।");
-            if(d && d.password !== psw) return alert("ভুল পাসওয়ার্ড!");
-
-            // নতুন হলে রেজিস্ট্রেশন হবে, পুরাতন হলে লগইন
-            loggedUser = mail;
-            if(!d) db.ref('workers/'+mail).set({email: mail.replace(/,/g,'.'), password: psw, status: 'active'});
-            
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('pin-section').classList.remove('hidden');
+            if(d && d.status === 'banned') return alert("You are Banned!");
+            if(d && d.password !== pass) return alert("Wrong Password!");
+            userKey = mail;
+            if(!d) db.ref('workers/'+mail).set({email: mail.replace(/,/g,'.'), password: pass, status: 'active'});
+            document.getElementById('box-1').classList.add('hidden');
+            document.getElementById('box-2').classList.remove('hidden');
         });
     }
 
-    function verifyPin() {
-        const pinIn = document.getElementById('v-pin').value;
+    function verify() {
+        const p = document.getElementById('w-pin').value;
         db.ref('settings/workerCode').once('value', s => {
-            if(pinIn === s.val()) {
-                document.getElementById('pin-section').classList.add('hidden');
-                document.getElementById('dash-section').classList.remove('hidden');
-                document.getElementById('user-display').innerText = loggedUser.replace(/,/g,'.');
-            } else { alert("পিন ভুল! এডমিন থেকে সঠিক পিন নিন।"); }
+            if(p === s.val()) {
+                document.getElementById('box-2').classList.add('hidden');
+                document.getElementById('box-3').classList.remove('hidden');
+            } else { alert("Wrong Secret PIN!"); }
         });
     }
 
-    function uploadMovie() {
-        const name = document.getElementById('mName').value;
-        const thumb = document.getElementById('mThumb').value;
-        const dl = document.getElementById('mDL').value;
-        if(!name || !thumb || !dl) return alert("সব ঘর পূরণ করুন!");
+    function submitContent() {
+        const name = document.getElementById('v-name').value;
+        const thumb = document.getElementById('v-thumb').value;
+        const dl = document.getElementById('v-dl').value;
+        if(!name || !thumb || !dl) return alert("Fill all fields!");
 
-        db.ref('movies').push({
-            name: name, thumb: thumb, download: dl, by: loggedUser.replace(/,/g,'.')
-        }).then(() => { alert("সফলভাবে আপলোড হয়েছে!"); location.reload(); });
+        db.ref('movies').push({ name, thumb, download: dl, worker: userKey.replace(/,/g,'.') })
+        .then(() => { alert("Published!"); location.reload(); });
     }
 </script>
 </body>
