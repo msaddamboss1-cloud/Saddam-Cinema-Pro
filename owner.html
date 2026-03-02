@@ -1,25 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><title>Admin Control</title>
+    <meta charset="UTF-8"><title>Admin Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
-<body class="bg-black text-white p-5">
-    <div class="max-w-lg mx-auto space-y-6">
-        <div class="bg-blue-600 p-6 rounded-[30px] flex justify-between items-center">
-            <h2 class="font-black italic uppercase">Admin Control V12</h2>
-            <div class="bg-black px-4 py-2 rounded-xl text-xs">USERS LIVE: <span id="master-online">0</span></div>
+<body class="bg-black text-white p-6">
+    <div class="max-w-md mx-auto space-y-6">
+        <div class="bg-blue-600 p-6 rounded-[35px] flex justify-between items-center shadow-2xl">
+            <h2 class="font-black italic uppercase">Control V11</h2>
+            <div class="bg-black/40 px-4 py-2 rounded-xl text-[10px] font-bold">LIVE USERS: <span id="m-count">0</span></div>
         </div>
         
-        <div class="bg-gray-900 p-6 rounded-[30px] space-y-4 border border-white/5">
-            <input id="st" type="number" placeholder="Timer" class="w-full bg-black p-4 rounded-xl border border-gray-800">
-            <select id="ss" class="w-full bg-black p-4 rounded-xl border border-gray-800">
-                <option value="on">AD ON</option><option value="off">AD OFF</option>
+        <div class="bg-[#111] p-6 rounded-[35px] space-y-4 border border-white/5">
+            <label class="text-[10px] text-gray-500 font-bold uppercase">Ad Timer (Seconds)</label>
+            <input id="tm" type="number" class="w-full bg-black p-4 rounded-2xl border border-white/5">
+            
+            <label class="text-[10px] text-gray-500 font-bold uppercase">Ad Status</label>
+            <select id="as" class="w-full bg-black p-4 rounded-2xl border border-white/5">
+                <option value="on">AD ENABLED</option>
+                <option value="off">AD DISABLED</option>
             </select>
-            <textarea id="sb1" placeholder="Paste Adsterra Script Here" class="w-full h-32 bg-black p-4 rounded-xl border border-gray-800 font-mono text-[10px]"></textarea>
-            <button onclick="update()" class="w-full bg-blue-600 p-4 rounded-2xl font-black">SAVE ALL SETTINGS</button>
+            
+            <label class="text-[10px] text-gray-500 font-bold uppercase">Adsterra JS Link Only</label>
+            <input id="ga" placeholder="https://pl2882...js" class="w-full bg-black p-4 rounded-2xl border border-white/5 font-mono text-xs">
+            
+            <button onclick="save()" class="w-full bg-blue-600 p-5 rounded-2xl font-black uppercase tracking-widest">Save All Settings</button>
         </div>
     </div>
 <script>
@@ -28,21 +35,19 @@
 
     db.ref('settings').on('value', s => {
         const d = s.val() || {};
-        document.getElementById('st').value = d.timer || 10;
-        document.getElementById('ss').value = d.adStatus || "on";
-        document.getElementById('sb1').value = d.ban1 || "";
+        document.getElementById('tm').value = d.timer || 10;
+        document.getElementById('as').value = d.adStatus || "on";
+        document.getElementById('ga').value = d.gateAd || "";
     });
 
-    db.ref('status/users').on('value', s => { 
-        document.getElementById('master-online').innerText = s.numChildren(); 
-    });
+    db.ref('status/online').on('value', s => { document.getElementById('m-count').innerText = s.numChildren(); });
 
-    function update(){
+    function save(){
         db.ref('settings').update({
-            timer: parseInt(document.getElementById('st').value),
-            adStatus: document.getElementById('ss').value,
-            ban1: document.getElementById('sb1').value
-        }).then(() => alert("Saved!"));
+            timer: parseInt(document.getElementById('tm').value),
+            adStatus: document.getElementById('as').value,
+            gateAd: document.getElementById('ga').value
+        }).then(() => alert("Settings Updated!"));
     }
 </script>
 </body>
