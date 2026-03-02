@@ -1,152 +1,146 @@
-<!DOCTYPE html>
-<html lang="bn">
+      <!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="site-title">Saddam Supreme | OTT</title>
+    <title id="site-title">Saddam OTT Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <style>
-        :root { --main-color: #3b82f6; }
-        body { background: #020617; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .blur-active { filter: blur(25px); pointer-events: none; transition: 0.7s; }
-        .notice-bar { background: var(--main-color); padding: 8px; font-weight: bold; overflow: hidden; white-space: nowrap; font-size: 12px; }
-        .notice-text { display: inline-block; animation: scroll 15s linear infinite; }
-        @keyframes scroll { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
-        .movie-card { border-radius: 15px; overflow: hidden; background: #0f172a; transition: 0.4s; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
-        .movie-card:hover { border-color: var(--main-color); transform: translateY(-5px); }
-        .ad-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 99999; display: none; align-items: center; justify-content: center; }
+        :root { --primary: #3b82f6; --ad-size: 80%; }
+        body { background: #020617; color: white; overflow-x: hidden; font-family: sans-serif; }
+        .ad-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; }
+        .ad-container { width: var(--ad-size); height: 70%; background: #0f172a; border-radius: 20px; overflow: hidden; border: 2px solid var(--primary); }
+        .video-card { background: #0f172a; border-radius: 12px; transition: 0.3s; cursor: pointer; border: 1px solid #1e293b; }
+        .video-card:hover { border-color: var(--primary); transform: translateY(-5px); }
+        iframe { pointer-events: auto; } /* ইউটিউব রিডাইরেক্ট ঠেকানোর জন্য স্মার্ট ফ্রেম */
     </style>
 </head>
 <body>
 
-<div id="app-content">
-    <div id="notice-box" class="notice-bar hidden"><div class="notice-text" id="not-val"></div></div>
-
-    <nav class="p-5 border-b border-white/5 bg-[#020617]/80 backdrop-blur-xl sticky top-0 z-50 flex justify-between items-center">
-        <h1 id="logo-txt" class="text-2xl font-black italic uppercase tracking-tighter" style="color: var(--main-color);">SADDAM</h1>
-        <span id="live-tag" class="text-[10px] font-bold px-3 py-1 bg-white/5 border border-white/10 rounded-full text-gray-400">SERVER ACTIVE</span>
+<div id="content-area">
+    <nav class="p-4 border-b border-white/5 flex justify-between items-center sticky top-0 bg-[#020617] z-50">
+        <h1 id="logo" class="text-xl font-black italic text-blue-500 uppercase">SADDAM</h1>
+        <div id="online-count" class="text-[10px] bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full border border-blue-500/20">Users: 0</div>
     </nav>
 
-    <main class="max-w-7xl mx-auto p-5 space-y-10">
-        <div id="player-zone" class="hidden animate-in fade-in duration-700">
-            <div class="aspect-video rounded-[30px] overflow-hidden border-4 border-white/5 bg-black shadow-2xl">
-                <iframe id="video-frame" class="w-full h-full" src="" frameborder="0" allowfullscreen></iframe>
+    <div id="banner-top" class="w-full flex justify-center py-2 min-h-[50px]"></div>
+
+    <main class="max-w-6xl mx-auto p-4">
+        <div id="player-box" class="hidden mb-10 space-y-4">
+            <div class="aspect-video rounded-3xl overflow-hidden bg-black border border-white/10 shadow-2xl relative">
+                <iframe id="main-video" class="w-full h-full" src="" frameborder="0" allow="autoplay; fullscreen" sandbox="allow-forms allow-scripts allow-pointer-lock allow-same-origin"></iframe>
             </div>
-            <div class="mt-6 p-6 bg-[#0d1425] rounded-3xl border border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-                <h2 id="video-name" class="text-lg font-bold">Movie Title</h2>
-                <button onclick="dlNow()" class="bg-blue-600 hover:bg-blue-500 px-10 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all">Download</button>
+            <div class="flex flex-wrap justify-between items-center bg-[#0f172a] p-5 rounded-2xl gap-4">
+                <h2 id="playing-title" class="font-bold text-lg"></h2>
+                <div class="flex gap-2">
+                    <button id="dl-btn" class="bg-green-600 px-6 py-2 rounded-xl font-bold text-xs uppercase">Download</button>
+                    <button id="fs-btn" class="bg-gray-700 px-4 py-2 rounded-xl font-bold text-xs">Full Screen</button>
+                </div>
             </div>
         </div>
 
-        <section>
-            <div class="flex items-center space-x-3 mb-8">
-                <div class="w-1.5 h-6 rounded-full" style="background: var(--main-color);"></div>
-                <h3 class="text-xs font-black uppercase tracking-[0.4em] text-gray-400">New Releases 2026</h3>
+        <div id="video-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4">
             </div>
-            <div id="movie-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                </div>
-        </section>
     </main>
 </div>
 
-<div id="ad-panel" class="ad-modal">
-    <div class="w-[90%] h-[80%] bg-[#0d1425] rounded-[40px] border-2 border-blue-500/30 overflow-hidden flex flex-col">
-        <iframe id="ad-frame" class="flex-1 bg-black"></iframe>
-        <div class="p-6 bg-[#0d1425] border-t border-white/5 flex justify-between items-center">
-            <span id="ad-timer-txt" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Wait: --s</span>
-            <button id="skip-btn" disabled class="px-12 py-3 bg-gray-800 text-gray-600 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all">Please Wait</button>
+<div id="ad-modal" class="ad-overlay">
+    <div class="ad-container flex flex-col">
+        <iframe id="ad-frame" class="flex-1 bg-black" src=""></iframe>
+        <div class="p-4 bg-[#0f172a] flex justify-between items-center border-t border-white/5">
+            <span id="ad-timer" class="text-xs font-bold text-gray-400">WAIT: 10s</span>
+            <button id="skip-ad" disabled class="bg-gray-800 text-gray-500 px-8 py-2 rounded-lg font-bold text-xs">PLEASE WAIT</button>
         </div>
     </div>
 </div>
 
 <script>
-    firebase.initializeApp({ databaseURL: "https://saddam-premium-hub-default-rtdb.firebaseio.com" });
+    const firebaseConfig = { databaseURL: "https://saddam-premium-hub-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let siteSettings = {};
 
-    db.ref('settings').on('value', snap => {
-        siteSettings = snap.val();
-        if(!siteSettings) return;
-        
-        // ডাইনামিক ডিজাইন আপডেট
-        document.documentElement.style.setProperty('--main-color', siteSettings.themeColor || '#3b82f6');
-        document.getElementById('site-title').innerText = siteSettings.siteName || "Saddam Supreme";
-        document.getElementById('logo-txt').innerText = siteSettings.siteName || "SADDAM";
-        document.getElementById('live-tag').innerText = siteSettings.liveText || "SERVER ACTIVE";
-        
-        if(siteSettings.notice) {
-            document.getElementById('notice-box').classList.remove('hidden');
-            document.getElementById('not-val').innerText = siteSettings.notice;
-        }
+    // অ্যাডস্টেরা পার্মানেন্ট ডিরেক্ট লিঙ্ক
+    const MY_AD_LINK = "https://www.profitablecpmrate.com/un4f76p6p?key=f0b83b8b6f79986b5952e46049a463a6";
+    let settings = {};
 
-        if(siteSettings.channelId) loadMovies(siteSettings.channelId);
+    // লাইভ ইউজার ট্র্যাকিং
+    const userRef = db.ref('online_users').push(true);
+    userRef.onDisconnect().remove();
+    db.ref('online_users').on('value', s => {
+        document.getElementById('online-count').innerText = `Users: ${s.numChildren()}`;
     });
 
-    function loadMovies(cid) {
-        const channelId = cid.includes('UC') ? cid : cid.split('/').pop();
-        const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+    db.ref('settings').on('value', snap => {
+        settings = snap.val() || {};
+        document.getElementById('site-title').innerText = settings.siteName || "Saddam OTT";
+        document.getElementById('logo').innerText = settings.siteName || "SADDAM";
+        document.documentElement.style.setProperty('--ad-size', (settings.adBoxSize || 80) + '%');
         
-        fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`)
-        .then(res => res.json())
-        .then(data => {
-            const grid = document.getElementById('movie-grid');
+        // ব্যানার অ্যাড লোড
+        if(settings.adStatus === 'on') {
+            document.getElementById('banner-top').innerHTML = `<iframe src="${MY_AD_LINK}" width="320" height="50" frameborder="0"></iframe>`;
+        }
+
+        if(settings.channelId) loadChannel(settings.channelId);
+    });
+
+    function loadChannel(cid) {
+        const id = cid.includes('UC') ? cid : cid.split('/').pop();
+        fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id='+id)}`)
+        .then(r => r.json()).then(data => {
+            const grid = document.getElementById('video-grid');
             grid.innerHTML = "";
-            data.items.forEach(item => {
-                const vId = item.link.split('v=')[1];
+            data.items.forEach(v => {
+                const vidId = v.link.split('v=')[1];
                 grid.innerHTML += `
-                    <div onclick="triggerAd('${vId}', '${item.title.replace(/'/g, "")}')" class="movie-card">
-                        <img src="https://img.youtube.com/vi/${vId}/mqdefault.jpg" class="w-full aspect-video object-cover">
-                        <div class="p-4 text-[10px] font-bold uppercase truncate text-gray-300">${item.title}</div>
-                    </div>`;
+                <div class="video-card" onclick="triggerAd('${vidId}', '${v.title.replace(/'/g, "")}')">
+                    <img src="https://img.youtube.com/vi/${vidId}/mqdefault.jpg" class="w-full aspect-video object-cover rounded-t-12">
+                    <div class="p-3 text-[10px] font-bold truncate uppercase">${v.title}</div>
+                </div>`;
             });
-        }).catch(() => {
-            document.getElementById('movie-grid').innerHTML = "<p class='col-span-full text-center text-gray-600 text-[10px] uppercase font-bold tracking-widest'>Invalid Channel ID or Network Error</p>";
         });
     }
 
-    function triggerAd(vId, vTitle) {
-        if(siteSettings.adStatus === 'off' && vId) { playMovie(vId, vTitle); return; }
+    function triggerAd(vid, title) {
+        if(settings.adStatus === 'off') { playVideo(vid, title); return; }
         
-        const modal = document.getElementById('ad-panel');
-        const skip = document.getElementById('skip-btn');
-        document.getElementById('ad-frame').src = siteSettings.adLink || "";
+        const modal = document.getElementById('ad-modal');
+        document.getElementById('ad-frame').src = settings.adLink || MY_AD_LINK;
         modal.style.display = 'flex';
-        document.getElementById('app-content').classList.add('blur-active');
-
-        let left = siteSettings.skipTimer || 10;
-        const interval = setInterval(() => {
-            left--;
-            document.getElementById('ad-timer-txt').innerText = `Wait: ${left}s`;
-            if(left <= 0) {
-                clearInterval(interval);
-                skip.disabled = false;
-                skip.innerText = "SKIP AD & PLAY";
-                skip.className = "px-12 py-3 bg-blue-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-blue-500/20";
-                skip.onclick = () => {
+        
+        let timeLeft = settings.skipTimer || 10;
+        const timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('ad-timer').innerText = `WAIT: ${timeLeft}s`;
+            if(timeLeft <= 0) {
+                clearInterval(timer);
+                const btn = document.getElementById('skip-ad');
+                btn.disabled = false;
+                btn.innerText = "SKIP & WATCH";
+                btn.className = "bg-blue-600 text-white px-8 py-2 rounded-lg font-bold text-xs";
+                btn.onclick = () => {
                     modal.style.display = 'none';
-                    document.getElementById('app-content').classList.remove('blur-active');
-                    if(vId) playMovie(vId, vTitle);
+                    playVideo(vid, title);
                 };
             }
         }, 1000);
     }
 
-    function playMovie(id, title) {
-        document.getElementById('player-zone').classList.remove('hidden');
-        document.getElementById('video-frame').src = `https://www.youtube.com/embed/${id}?autoplay=1`;
-        document.getElementById('video-name').innerText = title;
-        window.currentVideoId = id;
+    function playVideo(id, title) {
+        document.getElementById('player-box').classList.remove('hidden');
+        // ইউটিউব ভিডিও যাতে সরাসরি ইউটিউব অ্যাপে না যায় তার জন্য প্রক্সি রিলে
+        document.getElementById('main-video').src = `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&showinfo=0&autoplay=1`;
+        document.getElementById('playing-title').innerText = title;
         window.scrollTo({top: 0, behavior: 'smooth'});
-    }
-
-    function dlNow() {
-        alert("Preparing Download Link...");
-        setTimeout(() => {
-            window.open(`https://www.youtubepp.com/watch?v=${window.currentVideoId}`, '_blank');
-        }, 2000);
+        
+        // ডাউনলোড বাটন কন্ট্রোল
+        const dl = document.getElementById('dl-btn');
+        dl.onclick = () => window.open(`https://www.youtubepp.com/watch?v=${id}`, '_blank');
+        if(settings.dlStatus === 'off') dl.classList.add('hidden'); else dl.classList.remove('hidden');
     }
 </script>
 </body>
 </html>
+  
