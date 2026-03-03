@@ -1,1 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><title>Worker Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+</head>
+<body class="bg-[#020617] text-white p-6">
+    <div id="login" class="max-w-md mx-auto mt-20 space-y-4">
+        <h2 class="text-center font-black text-blue-500 uppercase tracking-widest">Worker Access</h2>
+        <input id="email" placeholder="Your Gmail" class="w-full p-4 bg-slate-900 rounded-2xl border border-white/10 outline-none">
+        <input id="pass" type="password" placeholder="System Password" class="w-full p-4 bg-slate-900 rounded-2xl border border-white/10 outline-none">
+        <button onclick="doLogin()" class="w-full bg-blue-600 p-5 rounded-2xl font-black shadow-xl shadow-blue-600/20 transition-transform active:scale-95">LOGIN</button>
+    </div>
+
+    <div id="panel" class="hidden max-w-md mx-auto space-y-4">
+        <div class="flex justify-between items-center bg-blue-600/10 p-4 rounded-2xl border border-blue-500/20">
+            <span id="user" class="text-[10px] font-bold text-blue-400"></span>
+            <button onclick="localStorage.clear(); location.reload();" class="text-[10px] text-red-400 font-bold uppercase">Logout</button>
+        </div>
+        <input id="name" placeholder="Movie Name" class="w-full p-4 bg-slate-900 rounded-2xl border border-white/10 outline-none">
+        <input id="thumb" placeholder="Poster URL" class="w-full p-4 bg-slate-900 rounded-2xl border border-white/10 outline-none">
+        <input id="s1" placeholder="Drive Link 1 (Main)" class="w-full p-4 bg-slate-900 rounded-2xl border border-white/10 outline-none">
+        <input id="s2" placeholder="Drive Link 2 (Optional)" class="w-full p-4 bg-slate-900 rounded-2xl border border-white/10 outline-none">
+        <button onclick="publish()" class="w-full bg-blue-600 p-5 rounded-2xl font-black uppercase">Publish Movie</button>
+    </div>
+
+<script>
+    firebase.initializeApp({ databaseURL: "https://saddam-premium-hub-default-rtdb.firebaseio.com" });
+    const db = firebase.database();
+
+    function check() {
+        const e = localStorage.getItem('wEmail');
+        if(e) {
+            db.ref('workers').child(e.replace(/\./g,'_')).on('value', s => {
+                const w = s.val();
+                if(w && w.status === 'active') {
+                    document.getElementById('login').classList.add('hidden');
+                    document.getElementById('panel').classList.remove('hidden');
+                    document.getElementById('user').innerText = "USER: " + e;
+                } else { localStorage.clear(); location.reload(); }
+            });
+        }
+    }
+    window.onload = check;
+
+    function doLogin() {
+        const e = document.getElementById('email').value, p = document.getElementById('pass').value;
+        db.ref('settings/workerPass').once('value', s => {
+            if(s.val() === p) {
+                localStorage.setItem('wEmail', e);
+                db.ref('workers').child(e.replace(/\./g,'_')).update({email:e, status:'active'});
+                check();
+            } else alert("Wrong Password!");
+        });
+    }
+
+    function publish() {
+        const n = document.getElementById('name').value, l1 = document.getElementById('s1').value;
+        if(!n || !l1) return alert("Fill Name and Link 1");
+        const fix = (l) => l.includes('/d/') ? `https://drive.google.com/uc?export=download&id=${l.split('/d/')[1].split('/')[0]}` : l;
+        db.ref('movies').push({ name: n, thumb: document.getElementById('thumb').value, s1: fix(l1), s2: fix(document.getElementById('s2').value), worker: localStorage.getItem('wEmail') });
+        alert("Published Successfully!"); location.reload();
+    }
+</script>
+</body>
+</html>
 
