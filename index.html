@@ -1,4 +1,4 @@
-           <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,7 +22,10 @@
     </div>
 </div>
 <nav class="p-5 sticky top-0 bg-[#020617]/90 backdrop-blur-md z-50 border-b border-white/5">
-    <h1 class="text-xl font-black italic text-blue-500 mb-4 uppercase">Saddam Cinema</h1>
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-xl font-black italic text-blue-500 uppercase">Saddam Cinema</h1>
+        <div class="bg-blue-600/20 px-3 py-1 rounded-full text-[10px] font-bold text-blue-400 border border-blue-500/30">LIVE: <span id="live">0</span></div>
+    </div>
     <input type="text" id="srch" onkeyup="filter()" placeholder="Search movies..." class="w-full bg-white/5 p-4 rounded-2xl border border-white/10 outline-none focus:border-blue-500">
 </nav>
 <div id="m-grid" class="p-5 grid grid-cols-1 md:grid-cols-3 gap-6"></div>
@@ -42,14 +45,16 @@
     db.ref('movies').on('value', s => {
         const g = document.getElementById('m-grid'); g.innerHTML="";
         s.forEach(c => { const m=c.val(); g.innerHTML += `<div class="m-card bg-slate-900/50 p-4 rounded-[30px] border border-white/5" data-n="${m.name.toLowerCase()}">
-            <video controls poster="${m.thumb}" class="w-full aspect-video rounded-xl mb-4"><source src="${m.s1}"></video>
+            <video controls poster="${m.thumb}" class="w-full aspect-video rounded-xl mb-4 bg-black"><source src="${m.s1}"></video>
             <p class="text-[11px] font-bold uppercase mb-4 opacity-70">${m.name}</p>
-            <div class="grid grid-cols-2 gap-2"><button onclick="window.open('${m.s1}')" class="bg-blue-600 py-3 rounded-xl text-[9px] font-black uppercase">Server 1</button>
-            <button onclick="window.open('${m.s2||m.s1}')" class="bg-slate-800 py-3 rounded-xl text-[9px] font-black uppercase">Server 2</button></div></div>`;
+            <div class="grid grid-cols-2 gap-2"><button onclick="dl('${m.s1}')" class="bg-blue-600 py-3 rounded-xl text-[9px] font-black uppercase">Server 1</button>
+            <button onclick="dl('${m.s2||m.s1}')" class="bg-slate-800 py-3 rounded-xl text-[9px] font-black uppercase">Server 2</button></div></div>`;
         });
     });
+    function dl(u){ if(!u || u === 'undefined') return alert("Link Error!"); window.open(u, '_blank'); }
     function filter(){ const q=document.getElementById('srch').value.toLowerCase(); document.querySelectorAll('.m-card').forEach(c=>c.style.display=c.getAttribute('data-n').includes(q)?'block':'none'); }
+    const lRef = db.ref('status/live').push(true); lRef.onDisconnect().remove();
+    db.ref('status/live').on('value', s => document.getElementById('live').innerText = s.numChildren());
 </script>
 </body>
 </html>
- 
