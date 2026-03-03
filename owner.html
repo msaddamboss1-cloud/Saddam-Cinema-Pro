@@ -1,1 +1,64 @@
-            
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><title>Admin Console</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+</head>
+<body class="bg-black text-white p-6">
+    <div class="max-w-md mx-auto space-y-6">
+        <h1 class="text-blue-500 font-black italic text-center uppercase">Admin Control</h1>
+        
+        <div class="bg-slate-900 p-6 rounded-[30px] border border-white/5 space-y-4">
+            <h3 class="text-[10px] font-bold text-gray-400 uppercase">Site Settings</h3>
+            <input id="wp" placeholder="New Worker Password" class="w-full bg-black p-4 rounded-xl text-xs outline-none">
+            <input id="ad" placeholder="Adsterra JS Link" class="w-full bg-black p-4 rounded-xl text-xs outline-none">
+            <select id="gs" class="w-full bg-black p-4 rounded-xl text-xs font-bold"><option value="on">Gate Ads: ON</option><option value="off">OFF</option></select>
+            <button onclick="save()" class="w-full bg-blue-600 p-4 rounded-xl font-bold text-xs">SAVE SETTINGS</button>
+        </div>
+
+        <div class="bg-slate-900 p-6 rounded-[30px] border border-white/5">
+            <h3 class="text-[10px] font-bold text-gray-400 uppercase mb-4">Worker List</h3>
+            <div id="w-list" class="space-y-2"></div>
+        </div>
+
+        <div class="bg-slate-900 p-6 rounded-[30px] border border-white/5">
+            <h3 class="text-[10px] font-bold text-gray-400 uppercase mb-4">Movie List</h3>
+            <div id="m-list" class="space-y-2 max-h-60 overflow-y-auto pr-2"></div>
+        </div>
+    </div>
+
+<script>
+    firebase.initializeApp({ databaseURL: "https://saddam-premium-hub-default-rtdb.firebaseio.com" });
+    const db = firebase.database();
+
+    function save() {
+        db.ref('settings').update({ workerPass: document.getElementById('wp').value, adUrl: document.getElementById('ad').value, gateStatus: document.getElementById('gs').value });
+        alert("Settings Updated!");
+    }
+
+    db.ref('workers').on('value', s => {
+        const box = document.getElementById('w-list'); box.innerHTML = "";
+        s.forEach(c => {
+            const w = c.val();
+            box.innerHTML += `<div class="flex justify-between items-center bg-black/50 p-3 rounded-xl">
+                <span class="text-[9px] truncate w-2/3">${w.email}</span>
+                <button onclick="db.ref('workers/${c.key}').update({status:'${w.status==='active'?'banned':'active'}'})" class="px-3 py-1 rounded-lg text-[8px] font-bold ${w.status==='active'?'bg-red-600':'bg-green-600'}">${w.status==='active'?'BLOCK':'UNBLOCK'}</button>
+            </div>`;
+        });
+    });
+
+    db.ref('movies').on('value', s => {
+        const box = document.getElementById('m-list'); box.innerHTML = "";
+        s.forEach(c => {
+            box.innerHTML += `<div class="flex justify-between items-center bg-black/50 p-3 rounded-xl">
+                <span class="text-[9px] uppercase font-bold truncate w-2/3">${c.val().name}</span>
+                <button onclick="db.ref('movies/${c.key}').remove()" class="text-red-500 font-bold text-[8px]">DELETE</button>
+            </div>`;
+        });
+    });
+</script>
+</body>
+                    </html>
+
