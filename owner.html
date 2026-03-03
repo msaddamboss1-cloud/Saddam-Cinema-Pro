@@ -1,34 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><title>Admin Portal</title>
+    <meta charset="UTF-8"><title>Admin Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
 <body class="bg-black text-white p-6">
     <div class="max-w-md mx-auto space-y-6">
-        <div class="bg-blue-600 p-6 rounded-[35px] flex justify-between items-center shadow-2xl">
-            <h2 class="font-black italic uppercase">Control V11</h2>
-            <div class="bg-black/40 px-4 py-2 rounded-xl text-[10px] font-bold">LIVE USERS: <span id="m-count">0</span></div>
+        <div class="bg-blue-600 p-6 rounded-[35px] flex justify-between items-center shadow-xl">
+            <h2 class="font-black italic">ADMIN PRO</h2>
+            <div class="bg-black/30 px-4 py-2 rounded-xl text-[10px] font-bold">ONLINE: <span id="m-count">0</span></div>
         </div>
-        
-        <div class="bg-[#111] p-6 rounded-[35px] space-y-4 border border-white/5">
-            <label class="text-[10px] text-gray-500 font-bold uppercase">Ad Timer (Seconds)</label>
-            <input id="tm" type="number" class="w-full bg-black p-4 rounded-2xl border border-white/5">
-            
-            <label class="text-[10px] text-gray-500 font-bold uppercase">Ad Status</label>
-            <select id="as" class="w-full bg-black p-4 rounded-2xl border border-white/5">
-                <option value="on">AD ENABLED</option>
-                <option value="off">AD DISABLED</option>
+
+        <div class="bg-gray-900 p-6 rounded-[35px] space-y-4 border border-white/5">
+            <input id="tm" type="number" placeholder="Ad Timer" class="w-full bg-black p-4 rounded-2xl">
+            <select id="as" class="w-full bg-black p-4 rounded-2xl">
+                <option value="on">AD ON</option><option value="off">AD OFF</option>
             </select>
-            
-            <label class="text-[10px] text-gray-500 font-bold uppercase">Adsterra JS Link Only</label>
-            <input id="ga" placeholder="https://pl2882...js" class="w-full bg-black p-4 rounded-2xl border border-white/5 font-mono text-xs">
-            
-            <button onclick="save()" class="w-full bg-blue-600 p-5 rounded-2xl font-black uppercase tracking-widest">Save All Settings</button>
+            <input id="ga" placeholder="Adsterra Script Link Only" class="w-full bg-black p-4 rounded-2xl text-xs">
+            <button onclick="saveSettings()" class="w-full bg-blue-600 p-4 rounded-2xl font-black uppercase">Save Settings</button>
+        </div>
+
+        <div class="bg-gray-900 p-6 rounded-[35px] border border-white/5">
+            <h3 class="text-xs font-bold mb-4 text-blue-400">WORKER LIST</h3>
+            <div id="worker-list" class="space-y-3"></div>
         </div>
     </div>
+
 <script>
     firebase.initializeApp({ databaseURL: "https://saddam-premium-hub-default-rtdb.firebaseio.com" });
     const db = firebase.database();
@@ -40,14 +39,34 @@
         document.getElementById('ga').value = d.gateAd || "";
     });
 
-    db.ref('status/online').on('value', s => { document.getElementById('m-count').innerText = s.numChildren(); });
+    db.ref('status/users').on('value', s => document.getElementById('m-count').innerText = s.numChildren());
 
-    function save(){
+    // Load Workers
+    db.ref('workers').on('value', snap => {
+        const list = document.getElementById('worker-list'); list.innerHTML = "";
+        snap.forEach(c => {
+            const w = c.val();
+            list.innerHTML += `
+            <div class="flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5">
+                <span class="text-[10px] truncate w-2/3">${w.email}</span>
+                <button onclick="toggleWorker('${w.email}', '${w.status}')" class="px-3 py-1 rounded-lg text-[8px] font-bold ${w.status === 'active' ? 'bg-red-600' : 'bg-green-600'}">
+                    ${w.status === 'active' ? 'BLOCK' : 'UNBLOCK'}
+                </button>
+            </div>`;
+        });
+    });
+
+    function toggleWorker(email, status) {
+        const newStatus = status === 'active' ? 'banned' : 'active';
+        db.ref('workers').child(email.replace(/\./g, '_')).update({ status: newStatus });
+    }
+
+    function saveSettings() {
         db.ref('settings').update({
             timer: parseInt(document.getElementById('tm').value),
             adStatus: document.getElementById('as').value,
             gateAd: document.getElementById('ga').value
-        }).then(() => alert("Settings Updated!"));
+        }).then(() => alert("Settings Saved!"));
     }
 </script>
 </body>
