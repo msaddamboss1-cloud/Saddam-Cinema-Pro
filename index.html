@@ -3,82 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saddam Cinema - Global Premium Hub</title>
+    <title>Saddam Cinema - Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     
     <script src="https://pl28803039.effectivegatecpm.com/a0/aa/e3/a0aae346dc10b523504506174de70ea5.js" async></script>
-    <script src="https://pl28833438.effectivegatecpm.com/28/4f/77/284f777a926c2a7bd6eceffffd8a2b63.js" async></script>
 
     <style>
-        body { background: #020617; color: white; padding-bottom: 120px; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
+        body { background: #020617; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; padding-bottom: 110px; }
         
-        /* 90% Ad Gate Overlay */
+        /* Magic Header Logic */
+        #main-header {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: rgba(2, 6, 23, 0.98);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .header-hidden { transform: translateY(-100%); }
+
+        /* 90% Ad Gate */
         #ad-gate { 
             position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; 
             display: none; align-items: center; justify-content: center;
         }
         #ad-box {
-            width: 90%; height: 85%; background: #0f172a; border-radius: 30px;
-            border: 2px solid #3b82f6; position: relative; overflow: hidden;
-            box-shadow: 0 0 50px rgba(59, 130, 246, 0.5);
+            width: 92%; height: 85%; background: #0f172a; border-radius: 35px;
+            border: 2px solid #3b82f6; overflow: hidden; position: relative;
         }
 
-        /* Bottom Fixed Ad Box */
-        #sticky-footer-ad {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 100px;
+        /* Bottom Fixed Ad Area */
+        #bottom-sticky {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 95px;
             background: #0f172a; border-top: 2px solid #3b82f6; z-index: 9000;
             display: flex; align-items: center; justify-content: center;
         }
 
-        .movie-card { background: #0f172a; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; }
+        .movie-card { background: #0f172a; border-radius: 28px; border: 1px solid rgba(255,255,255,0.05); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .blur-bg { filter: blur(15px); pointer-events: none; }
     </style>
 </head>
 <body>
 
 <div id="ad-gate">
     <div id="ad-box" class="flex flex-col">
-        <div class="flex-grow bg-black">
+        <div class="flex-grow bg-black relative">
             <iframe id="gate-frame" src="" class="w-full h-full border-none"></iframe>
+            <div id="ad-loading" class="absolute inset-0 flex items-center justify-center text-[10px] text-blue-500 italic uppercase">Loading Premium Ads...</div>
         </div>
-        <div class="p-4 glass flex justify-between items-center border-t border-blue-500/20">
-            <p id="gate-timer" class="text-xs font-bold text-blue-400">Unlock in 10s</p>
-            <button id="gate-skip" disabled class="bg-gray-800 px-8 py-2 rounded-xl text-[10px] font-black uppercase opacity-50">Skip Ad</button>
+        <div class="p-5 bg-slate-900 flex justify-between items-center border-t border-blue-500/20">
+            <span id="gate-timer" class="text-xs font-black text-blue-400">WAIT: 10s</span>
+            <button id="gate-skip" disabled class="bg-gray-800 px-10 py-3 rounded-2xl text-[10px] font-black uppercase opacity-40">Skip Ad</button>
         </div>
     </div>
 </div>
 
-<div id="sticky-footer-ad">
+<header id="main-header" class="p-4">
+    <div class="flex justify-between items-center mb-4 px-2">
+        <h1 class="text-xl font-black text-blue-500 italic">SADDAM CINEMA</h1>
+        <div class="bg-blue-600/10 px-4 py-1.5 rounded-full border border-blue-500/20 text-[10px] font-bold text-blue-400">
+            LIVE: <span id="online">1</span>
+        </div>
+    </div>
+
+    <div class="relative mb-4">
+        <input type="text" id="movie-search" onkeyup="searchMovie()" placeholder="Search movie or series..." class="w-full bg-slate-900 border border-white/5 p-3.5 pl-11 rounded-2xl text-[11px] outline-none focus:border-blue-600 transition-all shadow-inner">
+        <span class="absolute left-4 top-3.5 opacity-30 text-sm">🔍</span>
+    </div>
+
+    <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+        <button onclick="filterCat('All')" class="cat-btn bg-blue-600 px-6 py-2.5 rounded-full text-[10px] font-black uppercase shadow-lg">All</button>
+        <button onclick="filterCat('Action')" class="cat-btn bg-white/5 px-6 py-2.5 rounded-full text-[10px] font-black border border-white/5 uppercase">Action</button>
+        <button onclick="filterCat('Horror')" class="cat-btn bg-white/5 px-6 py-2.5 rounded-full text-[10px] font-black border border-white/5 uppercase">Horror</button>
+        <button onclick="filterCat('South')" class="cat-btn bg-white/5 px-6 py-2.5 rounded-full text-[10px] font-black border border-white/5 uppercase">South</button>
+    </div>
+</header>
+
+<main class="p-4 pt-44 grid grid-cols-1 gap-8" id="movie-list"></main>
+
+<div id="bottom-sticky">
     <div id="container-a0aae346dc10b523504506174de70ea5"></div>
-    <span class="absolute top-1 text-[8px] opacity-20 uppercase tracking-widest">Sponsored Ad Area</span>
-</div>
-
-<div id="main-ui">
-    <header class="p-6 sticky top-0 z-50 glass border-b border-white/5">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-xl font-black text-blue-500 italic uppercase">Saddam Cinema</h1>
-            <div class="bg-blue-600/10 px-4 py-2 rounded-full border border-blue-500/20 text-[10px] font-bold text-blue-400">LIVE: <span id="online">1</span></div>
-        </div>
-
-        <div class="relative mb-6">
-            <input type="text" id="search-input" onkeyup="searchMovie()" placeholder="Search movies, series..." class="w-full bg-slate-900 border border-white/10 p-4 pl-12 rounded-2xl text-xs outline-none focus:border-blue-600 transition-all">
-            <span class="absolute left-4 top-4 opacity-30">🔍</span>
-        </div>
-
-        <div class="flex gap-3 overflow-x-auto no-scrollbar pb-1" id="cat-tabs">
-            <button onclick="filterCat('All')" class="c-btn bg-blue-600 px-6 py-2 rounded-full text-[10px] font-bold uppercase whitespace-nowrap">All</button>
-            <button onclick="filterCat('Action')" class="c-btn bg-white/5 px-6 py-2 rounded-full text-[10px] font-bold border border-white/10 uppercase whitespace-nowrap">Action</button>
-            <button onclick="filterCat('Horror')" class="c-btn bg-white/5 px-6 py-2 rounded-full text-[10px] font-bold border border-white/10 uppercase whitespace-nowrap">Horror</button>
-            <button onclick="filterCat('South')" class="c-btn bg-white/5 px-6 py-2 rounded-full text-[10px] font-bold border border-white/10 uppercase whitespace-nowrap">South</button>
-            <button onclick="filterCat('Web Series')" class="c-btn bg-white/5 px-6 py-2 rounded-full text-[10px] font-bold border border-white/10 uppercase whitespace-nowrap">Web Series</button>
-        </div>
-    </header>
-
-    <main class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6" id="movie-grid"></main>
 </div>
 
 <script>
@@ -86,86 +91,99 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 1. Ad Gate System
-    function triggerAd(callback) {
+    // --- MAGIC HEADER LOGIC ---
+    let lastScroll = 0;
+    const header = document.getElementById('main-header');
+    window.addEventListener('scroll', () => {
+        const currentScroll = window.pageYOffset;
+        if (currentScroll <= 0) {
+            header.classList.remove('header-hidden');
+            return;
+        }
+        if (currentScroll > lastScroll && !header.classList.contains('header-hidden')) {
+            header.classList.add('header-hidden'); // নিচে গেলে হাইড
+        } else if (currentScroll < lastScroll && header.classList.contains('header-hidden')) {
+            header.classList.remove('header-hidden'); // উপরে টান দিলে শো
+        }
+        lastScroll = currentScroll;
+    });
+
+    // --- AD GATE LOGIC ---
+    function triggerAd(link) {
         db.ref('settings').once('value', s => {
             const data = s.val() || {};
             if(data.gateStatus === 'on') {
                 const gate = document.getElementById('ad-gate');
-                const ui = document.getElementById('main-ui');
                 gate.style.display = 'flex';
-                ui.classList.add('blur-bg');
                 document.getElementById('gate-frame').src = data.adUrl;
 
-                let count = 10;
-                const timer = setInterval(() => {
-                    count--;
-                    document.getElementById('gate-timer').innerText = `Unlock in ${count}s`;
-                    if(count <= 0) {
-                        clearInterval(timer);
+                let t = 10;
+                const iv = setInterval(() => {
+                    t--;
+                    document.getElementById('gate-timer').innerText = `WAIT: ${t}s`;
+                    if(t <= 0) {
+                        clearInterval(iv);
                         const btn = document.getElementById('gate-skip');
-                        btn.disabled = false; btn.classList.replace('bg-gray-800', 'bg-blue-600'); btn.classList.remove('opacity-50');
+                        btn.disabled = false; btn.classList.replace('bg-gray-800', 'bg-blue-600'); btn.classList.remove('opacity-40');
                         btn.onclick = () => {
                             gate.style.display = 'none';
-                            ui.classList.remove('blur-bg');
-                            if(callback) callback();
+                            if(link) window.open(link, '_blank');
                         };
                     }
                 }, 1000);
-            } else { if(callback) callback(); }
+            } else if(link) { window.open(link, '_blank'); }
         });
     }
 
-    // Load on Entry
-    window.onload = () => triggerAd();
-
-    // 2. Fetch Movies
+    // --- MOVIE LOADING ---
     db.ref('movies').on('value', s => {
-        const grid = document.getElementById('movie-grid'); grid.innerHTML = "";
+        const grid = document.getElementById('movie-list'); grid.innerHTML = "";
         s.forEach(child => {
             const m = child.val();
             grid.innerHTML += `
-            <div class="movie-card p-4 flex flex-col gap-4 shadow-xl" data-name="${m.name.toLowerCase()}" data-cat="${m.category}">
-                <div class="relative aspect-video rounded-xl overflow-hidden bg-black group" onclick="triggerAd()">
-                    <img src="${m.thumb}" class="w-full h-full object-cover opacity-70 group-hover:scale-110 transition-transform duration-700">
+            <div class="movie-card p-4 flex flex-col gap-4 shadow-2xl" data-name="${m.name.toLowerCase()}" data-cat="${m.category}">
+                <div class="relative aspect-video rounded-3xl overflow-hidden bg-black shadow-inner" onclick="triggerAd()">
+                    <img src="${m.thumb}" class="w-full h-full object-cover opacity-60">
                     <div class="absolute inset-0 flex items-center justify-center">
-                        <div class="bg-blue-600/80 p-4 rounded-full backdrop-blur-md">▶</div>
+                        <div class="bg-blue-600 p-4 rounded-full shadow-2xl">▶</div>
                     </div>
                 </div>
-                <div>
-                    <h3 class="text-xs font-bold uppercase truncate">${m.name}</h3>
+                <div class="px-2">
+                    <h3 class="text-xs font-black uppercase truncate">${m.name}</h3>
                     <p class="text-[9px] text-blue-500 font-bold mt-1 opacity-70">${m.category}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <button onclick="triggerAd(()=>window.open('${m.s1}'))" class="bg-blue-600 py-3 rounded-xl text-[10px] font-black uppercase">Server 1</button>
-                    <button onclick="triggerAd(()=>window.open('${m.s2 || m.s1}'))" class="bg-slate-800 py-3 rounded-xl text-[10px] font-black uppercase">Server 2</button>
+                    <button onclick="triggerAd('${m.s1}')" class="bg-blue-600 py-3.5 rounded-2xl text-[9px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/30">Server 1</button>
+                    <button onclick="triggerAd('${m.s2 || m.s1}')" class="bg-slate-800 py-3.5 rounded-2xl text-[9px] font-black uppercase tracking-widest">Server 2</button>
                 </div>
             </div>`;
         });
     });
 
-    // 3. Search Function
+    // --- SEARCH & FILTER ---
     function searchMovie() {
-        let input = document.getElementById('search-input').value.toLowerCase();
+        let input = document.getElementById('movie-search').value.toLowerCase();
         document.querySelectorAll('.movie-card').forEach(card => {
             card.style.display = card.dataset.name.includes(input) ? 'block' : 'none';
         });
     }
 
-    // 4. Category Filter
     function filterCat(cat) {
         document.querySelectorAll('.movie-card').forEach(card => {
             card.style.display = (cat === 'All' || card.dataset.cat === cat) ? 'block' : 'none';
         });
-        document.querySelectorAll('.c-btn').forEach(b => {
-            b.classList.toggle('bg-blue-600', b.innerText === cat);
-            b.classList.toggle('bg-white/5', b.innerText !== cat);
+        document.querySelectorAll('.cat-btn').forEach(btn => {
+            btn.classList.toggle('bg-blue-600', btn.innerText === cat);
+            btn.classList.toggle('bg-white/5', btn.innerText !== cat);
         });
     }
 
-    // Live counter
+    // Live Counter
     const lRef = db.ref('status/live').push(true); lRef.onDisconnect().remove();
     db.ref('status/live').on('value', s => document.getElementById('online').innerText = s.numChildren() || 1);
+    
+    // Entry Ad
+    window.onload = () => triggerAd();
 </script>
 </body>
 </html>
