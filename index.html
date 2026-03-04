@@ -1,127 +1,166 @@
-
-                          <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saddam Cinema - Fixed</title>
+    <title>Saddam Cinema - Official</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     
-    <script src="https://pl28829392.effectivegatecpm.com/bb/89/3d/bb893dececb6b558f2452b165b3a0956.js"></script>
-    <script src="https://pl28803039.effectivegatecpm.com/a0/aa/e3/a0aae346dc10b523504506174de70ea5.js"></script>
-    <script src="https://pl28833438.effectivegatecpm.com/28/4f/77/284f777a926c2a7bd6eceffffd8a2b63.js"></script>
+    <script src="https://pl28803039.effectivegatecpm.com/a0/aa/e3/a0aae346dc10b523504506174de70ea5.js" async></script>
 
     <style>
-        body { background: #020617; color: white; font-family: 'Inter', sans-serif; }
-        #sticky-header {
-            position: fixed; top: 0; width: 100%; z-index: 50;
+        body { background: #020617; color: white; font-family: system-ui; overflow-x: hidden; }
+        
+        /* 90% Display Ad Gate - আপনার প্রধান ইনকাম */
+        #ad-gate-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000;
+            display: none; align-items: center; justify-content: center;
+        }
+        #ad-box {
+            width: 90%; height: 85%; background: #0f172a; border-radius: 30px;
+            border: 2px solid #3b82f6; overflow: hidden; position: relative;
+        }
+
+        /* Navbar Logic (Hide on scroll down, show on scroll up) */
+        #main-nav {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
             background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(10px);
-            transition: transform 0.3s ease;
+            transition: transform 0.4s;
         }
         .nav-hidden { transform: translateY(-100%); }
-        .movie-card { background: #0f172a; border-radius: 24px; border: 1px solid rgba(59, 130, 246, 0.2); }
-        #ad-bottom-container {
-            position: fixed; bottom: 0; width: 100%; height: 90px;
-            background: #0f172a; border-top: 1px solid #3b82f6;
-            z-index: 100; display: flex; align-items: center; justify-content: center;
+
+        /* Permanent Bottom Ad Area */
+        #bottom-ad-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 95px;
+            background: #0f172a; border-top: 2px solid #3b82f6; z-index: 5000;
+            display: flex; align-items: center; justify-content: center;
         }
+
+        .movie-card { background: #0f172a; border-radius: 25px; border: 1px solid rgba(255,255,255,0.05); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .blur-body { filter: blur(10px); pointer-events: none; }
     </style>
 </head>
 <body class="pb-32">
 
-    <header id="sticky-header" class="p-4 shadow-lg">
-        <div class="flex justify-between items-center mb-4">
-            <h1 class="text-xl font-bold text-blue-500 uppercase italic">Saddam Cinema</h1>
-            <div class="bg-blue-600/20 px-3 py-1 rounded-full text-[10px]">LIVE: <span id="counter">1</span></div>
+<div id="ad-gate-overlay">
+    <div id="ad-box" class="flex flex-col">
+        <div class="flex-grow bg-black relative">
+            <iframe id="ad-frame" src="" class="w-full h-full border-none"></iframe>
+            <div id="ad-loading-text" class="absolute inset-0 flex items-center justify-center text-[10px] text-blue-500 uppercase font-black">Loading Premium Ads...</div>
         </div>
-        <input type="text" id="search" onkeyup="filterMovies()" placeholder="Search movies..." class="w-full bg-slate-900 border border-white/10 p-3 rounded-xl text-xs outline-none focus:border-blue-500 mb-3">
-        <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-            <button onclick="categoryFilter('All')" class="bg-blue-600 px-5 py-2 rounded-full text-[10px] font-bold">ALL</button>
-            <button onclick="categoryFilter('Action')" class="bg-slate-800 px-5 py-2 rounded-full text-[10px] font-bold">ACTION</button>
-            <button onclick="categoryFilter('South')" class="bg-slate-800 px-5 py-2 rounded-full text-[10px] font-bold">SOUTH</button>
+        <div class="p-4 bg-slate-900 flex justify-between items-center border-t border-blue-500/20">
+            <div class="text-[10px] font-bold text-blue-400 uppercase tracking-tighter">Skip in: <span id="ad-timer">10</span>s</div>
+            <button id="skip-btn" disabled class="bg-gray-800 px-10 py-3 rounded-2xl text-[10px] font-black uppercase opacity-40">Skip Ad</button>
         </div>
-    </header>
-
-    <main class="p-4 pt-44 grid grid-cols-1 gap-6" id="movie-list"></main>
-
-    <div id="ad-bottom-container">
-        <div id="container-a0aae346dc10b523504506174de70ea5"></div>
     </div>
+</div>
+
+<header id="main-nav" class="p-5">
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-xl font-black italic text-blue-500 uppercase">SADDAM CINEMA</h1>
+        <div class="bg-blue-600/10 px-4 py-1.5 rounded-full border border-blue-500/20 text-[10px] font-bold text-blue-400">LIVE: <span id="online">1</span></div>
+    </div>
+    <div class="relative">
+        <input type="text" id="movie-search" onkeyup="searchFn()" placeholder="Search movies..." class="w-full bg-slate-900 border border-white/10 p-4 rounded-2xl text-xs outline-none focus:border-blue-600">
+    </div>
+</header>
+
+<main class="p-5 pt-44 grid grid-cols-1 gap-8" id="movie-grid"></main>
+
+<div id="bottom-ad-bar">
+    <div id="container-a0aae346dc10b523504506174de70ea5"></div>
+</div>
 
 <script>
-    // Firebase Setup
     const firebaseConfig = { databaseURL: "https://saddam-premium-hub-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // ✅ FIXED NAVIGATION (SCROLL LOGIC)
-    let lastScroll = 0;
-    window.addEventListener('scroll', () => {
-        const currentScroll = window.pageYOffset;
-        if (currentScroll > lastScroll && currentScroll > 150) {
-            document.getElementById('sticky-header').classList.add('nav-hidden');
-        } else {
-            document.getElementById('sticky-header').classList.remove('nav-hidden');
-        }
-        lastScroll = currentScroll;
-    });
+    // 1. All-in-One Ad Gate Trigger
+    function triggerAd(downloadUrl) {
+        db.ref('settings').once('value', s => {
+            const data = s.val() || {};
+            if(data.gateStatus === 'on') {
+                const overlay = document.getElementById('ad-gate-overlay');
+                overlay.style.display = 'flex';
+                document.getElementById('ad-frame').src = data.adUrl;
 
-    // ✅ FIXED MOVIE LIST & LINKS (404 FIX)
-    db.ref('movies').on('value', (snapshot) => {
-        const list = document.getElementById('movie-list');
-        list.innerHTML = "";
-        snapshot.forEach((child) => {
-            const data = child.val();
-            // লিঙ্কগুলো যদি খালি থাকে তবে # ব্যবহার করবে যাতে ৪০০৪ এরর না আসে
-            const s1 = data.s1 || "#";
-            const s2 = data.s2 || "#";
-            
-            list.innerHTML += `
-            <div class="movie-card p-4 flex flex-col gap-3" data-name="${data.name.toLowerCase()}" data-cat="${data.category}">
-                <div class="relative aspect-video rounded-2xl overflow-hidden bg-black">
-                    <img src="${data.thumb}" class="w-full h-full object-cover opacity-60">
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <div class="bg-blue-600 p-3 rounded-full shadow-xl">▶</div>
-                    </div>
+                let timeLeft = 10;
+                const clock = setInterval(() => {
+                    timeLeft--;
+                    document.getElementById('ad-timer').innerText = timeLeft;
+                    if(timeLeft <= 0) {
+                        clearInterval(clock);
+                        const btn = document.getElementById('skip-btn');
+                        btn.disabled = false; btn.classList.replace('bg-gray-800', 'bg-blue-600'); btn.classList.remove('opacity-40');
+                        btn.onclick = () => {
+                            overlay.style.display = 'none';
+                            if(downloadUrl) startDownload(downloadUrl);
+                        };
+                    }
+                }, 1000);
+            } else { if(downloadUrl) startDownload(downloadUrl); }
+        });
+    }
+
+    // 2. Direct Download Helper
+    function startDownload(url) {
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', '');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // 3. Header Scroll Logic
+    let lastPos = 0;
+    window.onscroll = () => {
+        let currentPos = window.pageYOffset;
+        if (currentPos > lastPos && currentPos > 100) { document.getElementById('main-nav').classList.add('nav-hidden'); }
+        else { document.getElementById('main-nav').classList.remove('nav-hidden'); }
+        lastPos = currentPos;
+    };
+
+    // 4. Render Movies
+    db.ref('movies').on('value', snap => {
+        const grid = document.getElementById('movie-grid'); grid.innerHTML = "";
+        snap.forEach(child => {
+            const m = child.val();
+            grid.innerHTML += `
+            <div class="movie-card p-5 flex flex-col gap-4" data-name="${m.name.toLowerCase()}">
+                <div class="relative aspect-video rounded-3xl overflow-hidden bg-black" onclick="triggerAd()">
+                    <img src="${m.thumb}" class="w-full h-full object-cover opacity-60">
+                    <div class="absolute inset-0 flex items-center justify-center"><div class="bg-blue-600 p-4 rounded-full">▶</div></div>
                 </div>
                 <div>
-                    <h3 class="text-[14px] font-bold uppercase truncate">${data.name}</h3>
-                    <p class="text-[10px] text-blue-400 font-bold">${data.category || 'PREMIUM'}</p>
+                    <h3 class="text-sm font-bold uppercase truncate">${m.name}</h3>
+                    <p class="text-[9px] text-blue-400 font-bold tracking-widest uppercase mt-1">${m.category || 'PREMIUM'}</p>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <a href="${s1}" target="_blank" onclick="showAd()" class="bg-blue-600 text-center py-3 rounded-xl text-[10px] font-black uppercase">Server 1</a>
-                    <a href="${s2}" target="_blank" onclick="showAd()" class="bg-slate-800 text-center py-3 rounded-xl text-[10px] font-black uppercase">Server 2</a>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="triggerAd('${m.s1}')" class="bg-blue-600 py-4 rounded-2xl text-[10px] font-black uppercase tracking-tighter shadow-lg shadow-blue-600/20">Server 1 (Downloader)</button>
+                    <button onclick="triggerAd('${m.s2 || m.s1}')" class="bg-slate-800 py-4 rounded-2xl text-[10px] font-black uppercase tracking-tighter">Server 2 (Backup)</button>
                 </div>
             </div>`;
         });
     });
 
-    // ✅ FIXED AD FUNCTION
-    function showAd() {
-        // এই ফাংশনটি কল করলে আপনার গেট অ্যাড (Pop-under) ট্রিগার হবে
-        console.log("Ad Triggered for Income");
-    }
-
-    // Search & Filter
-    function filterMovies() {
-        let q = document.getElementById('search').value.toLowerCase();
-        document.querySelectorAll('.movie-card').forEach(card => {
-            card.style.display = card.dataset.name.includes(q) ? 'block' : 'none';
+    // 5. Search
+    function searchFn() {
+        let val = document.getElementById('movie-search').value.toLowerCase();
+        document.querySelectorAll('.movie-card').forEach(c => {
+            c.style.display = c.dataset.name.includes(val) ? 'block' : 'none';
         });
     }
 
-    function categoryFilter(cat) {
-        document.querySelectorAll('.movie-card').forEach(card => {
-            card.style.display = (cat === 'All' || card.dataset.cat === cat) ? 'block' : 'none';
-        });
-    }
-
-    // Live counter
+    // 6. Online Status & Auto Ad on Load
     const uRef = db.ref('status/live').push(true); uRef.onDisconnect().remove();
-    db.ref('status/live').on('value', s => document.getElementById('counter').innerText = s.numChildren() || 1);
-
+    db.ref('status/live').on('value', s => document.getElementById('online').innerText = s.numChildren() || 1);
+    
+    window.onload = () => triggerAd(); // সাইটে ঢুকলেই অ্যাড
 </script>
 </body>
 </html>
