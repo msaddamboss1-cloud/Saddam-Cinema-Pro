@@ -1,166 +1,292 @@
-<!DOCTYPE html>
+            <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saddam Cinema - Official</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-    
-    <script src="https://pl28803039.effectivegatecpm.com/a0/aa/e3/a0aae346dc10b523504506174de70ea5.js" async></script>
-
+    <title>Premium High-Speed Video Downloader</title>
     <style>
-        body { background: #020617; color: white; font-family: system-ui; overflow-x: hidden; }
-        
-        /* 90% Display Ad Gate - আপনার প্রধান ইনকাম */
-        #ad-gate-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000;
-            display: none; align-items: center; justify-content: center;
-        }
-        #ad-box {
-            width: 90%; height: 85%; background: #0f172a; border-radius: 30px;
-            border: 2px solid #3b82f6; overflow: hidden; position: relative;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Navbar Logic (Hide on scroll down, show on scroll up) */
-        #main-nav {
-            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
-            background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(10px);
-            transition: transform 0.4s;
-        }
-        .nav-hidden { transform: translateY(-100%); }
-
-        /* Permanent Bottom Ad Area */
-        #bottom-ad-bar {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 95px;
-            background: #0f172a; border-top: 2px solid #3b82f6; z-index: 5000;
-            display: flex; align-items: center; justify-content: center;
+        body {
+            background-color: #0b0f19;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 15px;
         }
 
-        .movie-card { background: #0f172a; border-radius: 25px; border: 1px solid rgba(255,255,255,0.05); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .blur-body { filter: blur(10px); pointer-events: none; }
+        .main-container {
+            width: 100%;
+            max-width: 728px; /* আড়াআড়ি ব্যানার সাইজের সাথে পারফেক্ট ম্যাচ */
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Horizontal/Leaderboard Ad Styling (আড়াআড়ি অ্যাড বক্স) */
+        .horizontal-ad {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed #38bdf8;
+            border-radius: 8px;
+            width: 100%;
+            min-height: 90px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #64748b;
+            font-size: 13px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        /* Main Download Card */
+        .card {
+            background: #141b2d;
+            border-radius: 12px;
+            padding: 35px 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            border: 1px solid #1f293d;
+            text-align: center;
+        }
+
+        h2 {
+            color: #38bdf8;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        /* Downloader Input Box */
+        .downloader-box {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .downloader-box input {
+            width: 100%;
+            padding: 16px;
+            border-radius: 8px;
+            border: 2px solid #1f293d;
+            background: #0b0f19;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        .downloader-box input:focus {
+            border-color: #38bdf8;
+        }
+
+        .dl-btn {
+            background: linear-gradient(135deg, #38bdf8, #0284c7);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .dl-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Fake Loading System */
+        .loading-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            background-color: #1f293d;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 14px;
+            background: linear-gradient(90deg, #38bdf8, #a855f7);
+            transition: width 0.1s linear;
+        }
+
+        .status-text {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        /* HTML Download Button */
+        .final-download-box {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .final-btn {
+            background: linear-gradient(135deg, #e11d48, #be123c); /* আকর্ষণীয় রেড-টোন বাটন */
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            display: inline-block;
+            text-decoration: none;
+            box-shadow: 0 5px 20px rgba(225, 29, 72, 0.4);
+            transition: 0.2s;
+        }
+
+        .final-btn:hover {
+            transform: scale(1.01);
+        }
     </style>
 </head>
-<body class="pb-32">
+<body>
 
-<div id="ad-gate-overlay">
-    <div id="ad-box" class="flex flex-col">
-        <div class="flex-grow bg-black relative">
-            <iframe id="ad-frame" src="" class="w-full h-full border-none"></iframe>
-            <div id="ad-loading-text" class="absolute inset-0 flex items-center justify-center text-[10px] text-blue-500 uppercase font-black">Loading Premium Ads...</div>
+    <div class="main-container">
+        
+        <!-- TOP HORIZONTAL AD 1 (আপনার দেওয়া ৭২৮x৯০ ব্যানার কোড) -->
+        <div class="horizontal-ad">
+            <script>
+              atOptions = {
+                'key' : 'adbd686eb06459400727a01108b0d65c',
+                'format' : 'iframe',
+                'height' : 90,
+                'width' : 728,
+                'params' : {}
+              };
+            </script>
+            <script src="https://www.highperformanceformat.com/adbd686eb06459400727a01108b0d65c/invoke.js"></script>
         </div>
-        <div class="p-4 bg-slate-900 flex justify-between items-center border-t border-blue-500/20">
-            <div class="text-[10px] font-bold text-blue-400 uppercase tracking-tighter">Skip in: <span id="ad-timer">10</span>s</div>
-            <button id="skip-btn" disabled class="bg-gray-800 px-10 py-3 rounded-2xl text-[10px] font-black uppercase opacity-40">Skip Ad</button>
+
+        <!-- TOP HORIZONTAL AD 2 (একই কোড ২য় বক্সে রেন্ডার করা হয়েছে) -->
+        <div class="horizontal-ad">
+            <script>
+              atOptions = {
+                'key' : 'adbd686eb06459400727a01108b0d65c',
+                'format' : 'iframe',
+                'height' : 90,
+                'width' : 728,
+                'params' : {}
+              };
+            </script>
+            <script src="https://www.highperformanceformat.com/adbd686eb06459400727a01108b0d65c/invoke.js"></script>
         </div>
+
+        <!-- CENTER MAIN DOWNLOADER BOX -->
+        <div class="card">
+            <h2>Cloud High-Speed Link Fetcher</h2>
+            
+            <div class="downloader-box" id="inputBoxContainer">
+                <input type="url" id="videoLink" placeholder="Paste Your Video Link Here..." required>
+                <button class="dl-btn" onclick="processLink()">Fetch Video File</button>
+            </div>
+
+            <div class="loading-container" id="loadingContainer">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="status-text" id="statusText">Connecting to cloud server...</div>
+            </div>
+
+            <div class="final-download-box" id="finalDownloadBox">
+                <button class="final-btn" onclick="triggerMultipleAds()">
+                    📥 Download HTML File
+                </button>
+            </div>
+        </div>
+
+        <!-- BOTTOM HORIZONTAL AD 3 -->
+        <div class="horizontal-ad">
+            <script>
+              atOptions = {
+                'key' : 'adbd686eb06459400727a01108b0d65c',
+                'format' : 'iframe',
+                'height' : 90,
+                'width' : 728,
+                'params' : {}
+              };
+            </script>
+            <script src="https://www.highperformanceformat.com/adbd686eb06459400727a01108b0d65c/invoke.js"></script>
+        </div>
+
     </div>
-</div>
 
-<header id="main-nav" class="p-5">
-    <div class="flex justify-between items-center mb-4">
-        <h1 class="text-xl font-black italic text-blue-500 uppercase">SADDAM CINEMA</h1>
-        <div class="bg-blue-600/10 px-4 py-1.5 rounded-full border border-blue-500/20 text-[10px] font-bold text-blue-400">LIVE: <span id="online">1</span></div>
-    </div>
-    <div class="relative">
-        <input type="text" id="movie-search" onkeyup="searchFn()" placeholder="Search movies..." class="w-full bg-slate-900 border border-white/10 p-4 rounded-2xl text-xs outline-none focus:border-blue-600">
-    </div>
-</header>
+    <script>
+        function processLink() {
+            const link = document.getElementById('videoLink').value;
+            if(link.trim() === "") {
+                alert("Please enter a valid link first!");
+                return;
+            }
 
-<main class="p-5 pt-44 grid grid-cols-1 gap-8" id="movie-grid"></main>
+            document.getElementById('inputBoxContainer').style.display = 'none';
+            document.getElementById('loadingContainer').style.display = 'block';
 
-<div id="bottom-ad-bar">
-    <div id="container-a0aae346dc10b523504506174de70ea5"></div>
-</div>
+            let width = 0;
+            const progressBar = document.getElementById('progressBar');
+            const statusText = document.getElementById('statusText');
 
-<script>
-    const firebaseConfig = { databaseURL: "https://saddam-premium-hub-default-rtdb.firebaseio.com" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // 1. All-in-One Ad Gate Trigger
-    function triggerAd(downloadUrl) {
-        db.ref('settings').once('value', s => {
-            const data = s.val() || {};
-            if(data.gateStatus === 'on') {
-                const overlay = document.getElementById('ad-gate-overlay');
-                overlay.style.display = 'flex';
-                document.getElementById('ad-frame').src = data.adUrl;
-
-                let timeLeft = 10;
-                const clock = setInterval(() => {
-                    timeLeft--;
-                    document.getElementById('ad-timer').innerText = timeLeft;
-                    if(timeLeft <= 0) {
-                        clearInterval(clock);
-                        const btn = document.getElementById('skip-btn');
-                        btn.disabled = false; btn.classList.replace('bg-gray-800', 'bg-blue-600'); btn.classList.remove('opacity-40');
-                        btn.onclick = () => {
-                            overlay.style.display = 'none';
-                            if(downloadUrl) startDownload(downloadUrl);
-                        };
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                    showDownloadButton();
+                } else {
+                    width += 1.25;
+                    progressBar.style.width = width + '%';
+                    
+                    if(width >= 25 && width < 60) {
+                        statusText.innerText = "Analyzing video source URL...";
+                    } else if(width >= 60 && width < 85) {
+                        statusText.innerText = "Bypassing server restrictions...";
+                    } else if(width >= 85) {
+                        statusText.innerText = "Compiling HTML download request...";
                     }
-                }, 1000);
-            } else { if(downloadUrl) startDownload(downloadUrl); }
-        });
-    }
+                }
+            }, 30); 
+        }
 
-    // 2. Direct Download Helper
-    function startDownload(url) {
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', '');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
+        function showDownloadButton() {
+            document.getElementById('loadingContainer').style.display = 'none';
+            document.getElementById('finalDownloadBox').style.display = 'block';
+        }
 
-    // 3. Header Scroll Logic
-    let lastPos = 0;
-    window.onscroll = () => {
-        let currentPos = window.pageYOffset;
-        if (currentPos > lastPos && currentPos > 100) { document.getElementById('main-nav').classList.add('nav-hidden'); }
-        else { document.getElementById('main-nav').classList.remove('nav-hidden'); }
-        lastPos = currentPos;
-    };
+        // আপনার প্রোভাইড করা ডাইরেক্ট লিঙ্কটি ৩ বার পপ-আপ ট্রিগার করবে
+        function triggerMultipleAds() {
+            window.open('https://www.effectivecpmnetwork.com/pijnx8rj3?key=3a77c83c31e5d50d3805def6367026b9', '_blank');
+            window.open('https://www.effectivecpmnetwork.com/pijnx8rj3?key=3a77c83c31e5d50d3805def6367026b9', '_blank');
+            window.open('https://www.effectivecpmnetwork.com/pijnx8rj3?key=3a77c83c31e5d50d3805def6367026b9', '_blank');
 
-    // 4. Render Movies
-    db.ref('movies').on('value', snap => {
-        const grid = document.getElementById('movie-grid'); grid.innerHTML = "";
-        snap.forEach(child => {
-            const m = child.val();
-            grid.innerHTML += `
-            <div class="movie-card p-5 flex flex-col gap-4" data-name="${m.name.toLowerCase()}">
-                <div class="relative aspect-video rounded-3xl overflow-hidden bg-black" onclick="triggerAd()">
-                    <img src="${m.thumb}" class="w-full h-full object-cover opacity-60">
-                    <div class="absolute inset-0 flex items-center justify-center"><div class="bg-blue-600 p-4 rounded-full">▶</div></div>
-                </div>
-                <div>
-                    <h3 class="text-sm font-bold uppercase truncate">${m.name}</h3>
-                    <p class="text-[9px] text-blue-400 font-bold tracking-widest uppercase mt-1">${m.category || 'PREMIUM'}</p>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="triggerAd('${m.s1}')" class="bg-blue-600 py-4 rounded-2xl text-[10px] font-black uppercase tracking-tighter shadow-lg shadow-blue-600/20">Server 1 (Downloader)</button>
-                    <button onclick="triggerAd('${m.s2 || m.s1}')" class="bg-slate-800 py-4 rounded-2xl text-[10px] font-black uppercase tracking-tighter">Server 2 (Backup)</button>
-                </div>
-            </div>`;
-        });
-    });
+            resetPage();
+        }
 
-    // 5. Search
-    function searchFn() {
-        let val = document.getElementById('movie-search').value.toLowerCase();
-        document.querySelectorAll('.movie-card').forEach(c => {
-            c.style.display = c.dataset.name.includes(val) ? 'block' : 'none';
-        });
-    }
+        function resetPage() {
+            setTimeout(() => {
+                document.getElementById('finalDownloadBox').style.display = 'none';
+                document.getElementById('inputBoxContainer').style.display = 'flex';
+                document.getElementById('videoLink').value = "";
+            }, 1200);
+        }
+    </script>
 
-    // 6. Online Status & Auto Ad on Load
-    const uRef = db.ref('status/live').push(true); uRef.onDisconnect().remove();
-    db.ref('status/live').on('value', s => document.getElementById('online').innerText = s.numChildren() || 1);
-    
-    window.onload = () => triggerAd(); // সাইটে ঢুকলেই অ্যাড
-</script>
+    <!-- IN-PAGE PUSH / POPUNDER SCRIPTS (ডিসপ্লের কানিতে ও ব্যাকগ্রাউন্ডে শো করার স্ক্রিপ্ট) -->
+    <script src="https://pl29633137.effectivecpmnetwork.com/8c/d5/52/8cd5526bbc8ed8d8d1faee870d489a86.js"></script>
+    <script src="https://pl29633141.effectivecpmnetwork.com/5b/82/c4/5b82c4eed3ce453c198cbf871b8c4e62.js"></script>
+
 </body>
 </html>
